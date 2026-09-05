@@ -1,0 +1,7 @@
+/* Ajustes mínimos — o resto do visual vem do próprio wp-admin e do CodeMirror nativo. */
+
+#htl_template_metabox .CodeMirror {
+	border: 1px solid #dcdcde;
+	height: auto;
+	min-height: 200px;
+}
