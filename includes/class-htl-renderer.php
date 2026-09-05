@@ -12,15 +12,22 @@
  *      (HTL_Settings), guardada como uma option só.
  *
  * Ordem de processamento do HTML de um template, de fora pra dentro:
- *   1. resolve_includes()  — compõe {{include:slug}} (outros templates).
- *   2. resolve_loops()     — expande {{loop ...}}...{{/loop}} em listas
+ *   1. {{assets_url}}      — pasta de assets do template raiz (cada
+ *                            {{include}} resolve a sua própria depois).
+ *   2. resolve_includes()  — compõe {{include:slug}} (outros templates).
+ *   3. resolve_menus()     — expande {{menu location="..."}} com o menu
+ *                            nativo do WordPress.
+ *   4. resolve_loops()     — expande {{loop ...}}...{{/loop}} em listas
  *                            de posts/categorias reais do WordPress,
  *                            já filtrando automaticamente pela
  *                            categoria/tag/autor/busca atual quando o
  *                            template está sendo usado como arquivo.
- *   3. replace_tags()      — troca as tags que sobraram: no contexto de
+ *   5. replace_tags()      — troca as tags que sobraram: no contexto de
  *                            UM post (posts/páginas) ou no contexto
- *                            "sem post" de um arquivo/home/busca/404.
+ *                            "sem post" de um arquivo/home/busca/404
+ *                            (+ {{meta:chave}} por post).
+ *   6. do_shortcode()      — processa shortcodes de plugins (formulários
+ *                            etc.) colados no HTML do template.
  */
 
 defined( 'ABSPATH' ) || exit;
@@ -54,13 +61,20 @@ class HTL_Renderer {
 		}
 
 		// Caso 1: post/página individual — template escolhido na
-		// metabox daquele post específico.
+		// metabox daquele post específico. A escolha manual vence; sem
+		// escolha, valem as regras globais (Ajustes → "Posts e páginas
+		// por regra").
 		if ( is_singular() ) {
-			$post_id     = get_queried_object_id();
+			$post_id = get_queried_object_id();
+
 			$template_id = (int) get_post_meta( $post_id, HTL_Metabox::META_TEMPLATE_ID, true );
 
 			if ( ! $this->template_is_valid( $template_id ) ) {
-				return $template; // Nada escolhido, ou referência quebrada: tema normal cuida da página.
+				$template_id = $this->resolve_rule_template( $post_id );
+			}
+
+			if ( ! $this->template_is_valid( $template_id ) ) {
+				return $template; // Nada escolhido e nenhuma regra casa: tema normal cuida da página.
 			}
 
 			$this->render_page( $post_id, $template_id );
@@ -92,6 +106,39 @@ class HTL_Renderer {
 		return $template_id
 			&& HTL_Post_Type::SLUG === get_post_type( $template_id )
 			&& 'publish' === get_post_status( $template_id );
+	}
+
+	/**
+	 * Casa o post atual com as regras globais salvas em HTL_Settings
+	 * (option htl_singular_rules). A primeira regra que casar vence —
+	 * a ordem das linhas na tela de Ajustes importa. Regra com categoria
+	 * vazia casa com qualquer post do tipo; se o tipo não usar a
+	 * taxonomia "category", a categoria da regra é ignorada.
+	 */
+	private function resolve_rule_template( $post_id ) {
+		$rules = get_option( 'htl_singular_rules', array() );
+
+		if ( empty( $rules ) || ! is_array( $rules ) ) {
+			return 0;
+		}
+
+		$post_type = get_post_type( $post_id );
+
+		foreach ( $rules as $rule ) {
+			if ( empty( $rule['post_type'] ) || $rule['post_type'] !== $post_type ) {
+				continue;
+			}
+
+			if ( ! empty( $rule['category'] ) ) {
+				if ( ! is_object_in_taxonomy( $post_type, 'category' ) || ! has_category( $rule['category'], $post_id ) ) {
+					continue;
+				}
+			}
+
+			return (int) $rule['template_id'];
+		}
+
+		return 0;
 	}
 
 	/**
@@ -137,6 +184,25 @@ class HTL_Renderer {
 	}
 
 	/**
+	 * URL da pasta de assets de um template — uploads/htl-templates/{slug}/.
+	 * Os arquivos são enviados por FTP/gerenciador de arquivos do host (o
+	 * plugin não faz upload, mantendo a superfície mínima); a pasta é
+	 * criada no salvamento do template. Filtrável via htl_assets_url.
+	 */
+	private function assets_url( $template_id ) {
+		$slug = (string) get_post_field( 'post_name', $template_id );
+
+		if ( '' === $slug ) {
+			return '';
+		}
+
+		$upload_dir = wp_upload_dir();
+		$url        = trailingslashit( $upload_dir['baseurl'] ) . 'htl-templates/' . $slug;
+
+		return esc_url_raw( apply_filters( 'htl_assets_url', $url, $template_id ) );
+	}
+
+	/**
 	 * Pré-visualização de um template — não exige uma página real
 	 * associada. `?htl_preview=<id>` mostra o template usando ele mesmo
 	 * como contexto (então {{post_title}} mostra o título do template);
@@ -144,6 +210,14 @@ class HTL_Renderer {
 	 * real, se quiser.
 	 */
 	private function maybe_render_preview() {
+		// Preview é ferramenta de admin: sem usuário logado não faz sentido
+		// processar (a checagem de capability abaixo já cobriria, mas o
+		// guard explícito impede que plugins de cache agressivos sirvam
+		// `/?htl_preview=N` a visitantes anônimos).
+		if ( ! is_user_logged_in() ) {
+			return;
+		}
+
 		$template_id = absint( $_GET['htl_preview'] );
 
 		if ( ! $this->template_is_valid( $template_id ) ) {
@@ -160,6 +234,10 @@ class HTL_Renderer {
 		if ( ! get_post( $context_id ) ) {
 			$context_id = $template_id;
 		}
+
+		// Reforça no-cache: a resposta contém conteúdo de rascunho e não
+		// deve parar em nenhum cache de página (Varnish, plugin, CDN).
+		nocache_headers();
 
 		$this->render_page( $context_id, $template_id );
 		exit;
@@ -181,11 +259,26 @@ class HTL_Renderer {
 			$css_bucket[] = $own_css;
 		}
 
-		$html = get_post_meta( $template_id, HTL_Metabox::META_HTML, true );
+		// Cada template tem a própria pasta de assets
+		// (uploads/htl-templates/{slug}/): o template raiz é resolvido
+		// aqui; o de cada {{include}} é resolvido dentro do próprio
+		// include — é o que faz um header/footer reusável apontar pros
+		// SEUS arquivos, não pros do template pai.
+		$html = strtr(
+			get_post_meta( $template_id, HTL_Metabox::META_HTML, true ),
+			array( '{{assets_url}}' => $this->assets_url( $template_id ) )
+		);
 
 		$html = $this->resolve_includes( $html, $css_bucket );
+		$html = $this->resolve_menus( $html );
 		$html = $this->resolve_loops( $html );
 		$html = $this->replace_tags( $html, $post_id );
+
+		// Escape hatch pra formulários e componentes de plugins: shortcodes
+		// colados no HTML do template são processados como num post normal
+		// (Contact Form 7, Gravity Forms, etc.). Shortcode não registrado
+		// permanece como texto, igual no core.
+		$html = do_shortcode( $html );
 
 		$this->print_shell( $html, implode( "\n", $css_bucket ) );
 	}
@@ -210,13 +303,13 @@ class HTL_Renderer {
 				$slug = $matches[1];
 
 				if ( in_array( $slug, $visited, true ) ) {
-					return sprintf( '<!-- htl: loop de inclusão detectado em "%s" -->', esc_html( $slug ) );
+					return sprintf( __( '<!-- htl: inclusion loop detected in "%s" -->', 'html-templates-lite' ), esc_html( $slug ) );
 				}
 
 				$included = get_page_by_path( $slug, OBJECT, HTL_Post_Type::SLUG );
 
 				if ( ! $included || 'publish' !== $included->post_status ) {
-					return sprintf( '<!-- htl: template "%s" não encontrado ou não publicado -->', esc_html( $slug ) );
+					return sprintf( __( '<!-- htl: template "%s" not found or not published -->', 'html-templates-lite' ), esc_html( $slug ) );
 				}
 
 				$included_css = get_post_meta( $included->ID, HTL_Metabox::META_CSS, true );
@@ -225,6 +318,14 @@ class HTL_Renderer {
 				}
 
 				$included_html = get_post_meta( $included->ID, HTL_Metabox::META_HTML, true );
+
+				// Assets do template incluído apontam pra pasta DELE, não
+				// pra do template raiz — é isso que torna um header/footer
+				// reusável autossuficiente.
+				$included_html = strtr(
+					$included_html,
+					array( '{{assets_url}}' => $this->assets_url( $included->ID ) )
+				);
 
 				return $this->resolve_includes(
 					$included_html,
@@ -238,13 +339,51 @@ class HTL_Renderer {
 	}
 
 	/**
+	 * Expande {{menu location="primary"}} pelo menu nativo do WordPress.
+	 * Sem wrapper: devolve o <ul> com as classes nativas (menu,
+	 * menu-item, current-menu-item...) pra encaixar na marcação do
+	 * template — a <nav> e o CSS ficam por conta do autor do template.
+	 */
+	private function resolve_menus( $html ) {
+		return preg_replace_callback(
+			'/\{\{menu\b\s*(.*?)\}\}/i',
+			function ( $matches ) {
+				$atts     = shortcode_parse_atts( trim( $matches[1] ) );
+				$location = ( is_array( $atts ) && ! empty( $atts['location'] ) ) ? sanitize_key( $atts['location'] ) : '';
+
+				if ( '' === $location ) {
+					return __( '<!-- htl: missing menu location, e.g. {{menu location="primary"}} -->', 'html-templates-lite' );
+				}
+
+				if ( ! has_nav_menu( $location ) ) {
+					return sprintf(
+						__( '<!-- htl: menu "%s" has no menu assigned (Appearance → Menus) -->', 'html-templates-lite' ),
+						esc_html( $location )
+					);
+				}
+
+				$menu = wp_nav_menu(
+					array(
+						'theme_location' => $location,
+						'echo'           => false,
+						'container'      => false,
+					)
+				);
+
+				return is_string( $menu ) ? $menu : '';
+			},
+			$html
+		);
+	}
+
+	/**
 	 * Expande {{loop attrs...}}...{{/loop}} numa lista real de posts do
 	 * WordPress. Os atributos usam a MESMA sintaxe de um shortcode
 	 * (key="value"), reaproveitando shortcode_parse_atts() do core em
 	 * vez de escrever um parser próprio.
 	 *
 	 * Atributos aceitos: post_type, category, tag, author, s (busca),
-	 * count, orderby, order.
+	 * count, orderby, order, paged.
 	 *
 	 * Auto-detecção pra templates de arquivo: se o template estiver
 	 * sendo usado como template de categoria/tag/autor/busca (via
@@ -276,6 +415,7 @@ class HTL_Renderer {
 						'count'     => 5,
 						'orderby'   => 'date',
 						'order'     => 'DESC',
+						'paged'     => false,
 					)
 				);
 
@@ -323,6 +463,18 @@ class HTL_Renderer {
 					$query_args['s'] = sanitize_text_field( $atts['s'] );
 				}
 
+				// paged="true" (ou "1"): segue a paginação da URL atual
+				// (/page/2/, /page/3/...). Destinado a templates de arquivo,
+				// onde o loop lista o mesmo conteúdo do contexto — em loops
+				// "widget" com filtros próprios não corresponde ao que ele
+				// exibe, por isso é opt-in e não default. Precisa do total
+				// de posts pra calcular as páginas, então abre mão do
+				// no_found_rows neste caso.
+				if ( in_array( (string) $atts['paged'], array( 'true', '1' ), true ) ) {
+					$query_args['paged']         = max( 1, (int) get_query_var( 'paged' ) );
+					$query_args['no_found_rows'] = false;
+				}
+
 				/**
 				 * Deixa devs ajustarem a consulta do loop sem editar o
 				 * plugin — por exemplo, pra filtrar por uma taxonomia
@@ -339,6 +491,13 @@ class HTL_Renderer {
 				 */
 				$query_args = apply_filters( 'htl_loop_query_args', $query_args, $atts );
 
+				// Templates não podem ser listados em loop — exporia os
+				// títulos de outros templates em páginas públicas. Checado
+				// DEPOIS do filtro acima, pra nenhum caminho furar a regra.
+				if ( ! empty( $query_args['post_type'] ) && 'htl_template' === $query_args['post_type'] ) {
+					return __( '<!-- htl: templates cannot be listed in a {{loop}} -->', 'html-templates-lite' );
+				}
+
 				$query  = new WP_Query( $query_args );
 				$output = '';
 
@@ -349,13 +508,128 @@ class HTL_Renderer {
 				if ( '' === $output ) {
 					// Nenhum post encontrado — comentário visível em vez
 					// de o bloco simplesmente desaparecer sem explicação.
-					$output = sprintf( '<!-- htl: nenhum post encontrado para este loop (%s) -->', esc_html( $attr_string ) );
+					$output = sprintf( __( '<!-- htl: no posts found for this loop (%s) -->', 'html-templates-lite' ), esc_html( $attr_string ) );
 				}
 
 				return $output;
 			},
 			$html
 		);
+	}
+
+	/**
+	 * Renderiza a tag {{pagination}} — a navegação entre páginas da URL
+	 * atual (página 2, 3... de home/categoria/tag/autor/data/busca), com
+	 * base na consulta principal do WordPress. Combina com
+	 * {{loop ... paged="true"}}: na página 2, o loop passa a listar os
+	 * posts seguintes em vez de repetir os primeiros.
+	 *
+	 * Em contextos com uma página só, retorna string vazia — a tag some
+	 * em vez de imprimir uma navegação órfã.
+	 */
+	private function render_pagination() {
+		global $wp_query;
+
+		if ( ! $wp_query || (int) $wp_query->max_num_pages <= 1 ) {
+			return '';
+		}
+
+		$links = paginate_links(
+			array(
+				'total'     => (int) $wp_query->max_num_pages,
+				'current'   => max( 1, (int) get_query_var( 'paged' ) ),
+				'mid_size'  => 2,
+				'prev_text' => __( '&laquo; Previous', 'html-templates-lite' ),
+				'next_text' => __( 'Next &raquo;', 'html-templates-lite' ),
+				'type'      => 'list',
+			)
+		);
+
+		if ( ! is_string( $links ) || '' === $links ) {
+			return '';
+		}
+
+		return '<nav class="htl-pagination" aria-label="' . esc_attr( __( 'Posts pagination', 'html-templates-lite' ) ) . '">' . $links . '</nav>';
+	}
+
+	/**
+	 * Expande {{meta:chave}} com campos personalizados do post (ACF
+	 * incluso — campos simples ficam na chave pura). Campos protegidos
+	 * (prefixo _) não são expostos: a página é pública e não dá pra saber
+	 * o que um plugin guarda num meta interno. Valores complexos (arrays)
+	 * saem vazios — quem precisar deles deve usar o filtro
+	 * htl_template_tags.
+	 */
+	private function resolve_meta_tags( $html, $post_id ) {
+		if ( ! $post_id ) {
+			return $html;
+		}
+
+		return preg_replace_callback(
+			'/\{\{meta:([a-zA-Z0-9_-]+)\}\}/',
+			function ( $matches ) use ( $post_id ) {
+				$key = $matches[1];
+
+				if ( '_' === $key[0] ) {
+					return __( '<!-- htl: protected meta keys (prefixed with _) are not exposed -->', 'html-templates-lite' );
+				}
+
+				$value = get_post_meta( $post_id, $key, true );
+
+				return is_scalar( $value ) ? (string) $value : '';
+			},
+			$html
+		);
+	}
+
+	/**
+	 * {{comment_form}} — formulário de comentários nativo do WordPress.
+	 * Some quando comentários estão fechados ou o tipo de conteúdo não
+	 * os suporta.
+	 */
+	private function render_comment_form( $post_id ) {
+		if ( ! post_type_supports( get_post_type( $post_id ), 'comments' ) || ! comments_open( $post_id ) ) {
+			return '';
+		}
+
+		ob_start();
+		comment_form( array(), $post_id );
+
+		return ob_get_clean();
+	}
+
+	/**
+	 * {{comments_list}} — comentários aprovados do post, com a marcação
+	 * e as classes nativas do WordPress (cada comentário num <div>).
+	 */
+	private function render_comments_list( $post_id ) {
+		if ( ! post_type_supports( get_post_type( $post_id ), 'comments' ) ) {
+			return '';
+		}
+
+		$comments = get_comments(
+			array(
+				'post_id' => $post_id,
+				'status'  => 'approve',
+				'order'   => 'ASC',
+			)
+		);
+
+		if ( empty( $comments ) ) {
+			return '';
+		}
+
+		ob_start();
+		wp_list_comments(
+			array(
+				'style'       => 'div',
+				'short_ping'  => true,
+				'avatar_size' => 48,
+			),
+			$comments
+		);
+
+		return ob_get_clean();
 	}
 
 	/**
@@ -384,6 +658,7 @@ class HTL_Renderer {
 					'{{archive_title}}'       => get_the_archive_title(),
 					'{{archive_description}}' => get_the_archive_description(),
 					'{{search_query}}'        => get_search_query(),
+					'{{pagination}}'          => $this->render_pagination(),
 					'{{site_title}}'          => get_bloginfo( 'name' ),
 					'{{site_tagline}}'        => get_bloginfo( 'description' ),
 					'{{current_year}}'        => date_i18n( 'Y' ),
@@ -409,17 +684,36 @@ class HTL_Renderer {
 			setup_postdata( $context_post );
 		}
 
+		// Posts protegidos por senha: o conteúdo nunca é exposto — mostra
+		// o formulário de senha nativo, mesmo comportamento de
+		// the_content() no loop do core. O contexto singular já é filtrado
+		// antes (render_page()), mas dentro de um {{loop}} cada post
+		// precisa da checagem própria — get_post_field() ignora a senha.
+		$post_content = post_password_required( $post_id )
+			? get_the_password_form( $post_id )
+			: apply_filters( 'the_content', get_post_field( 'post_content', $post_id ) );
+
+		// Campos personalizados ({{meta:chave}}) — resolvidos por post,
+		// então funcionam também dentro de {{loop}}.
+		$html = $this->resolve_meta_tags( $html, $post_id );
+
 		$tags = apply_filters(
 			'htl_template_tags',
 			array(
-				'{{post_title}}'     => get_the_title( $post_id ),
-				'{{post_content}}'   => apply_filters( 'the_content', get_post_field( 'post_content', $post_id ) ),
-				'{{post_excerpt}}'   => get_the_excerpt( $post_id ),
-				'{{featured_image}}' => (string) get_the_post_thumbnail_url( $post_id, 'full' ),
-				'{{permalink}}'      => get_permalink( $post_id ),
-				'{{site_title}}'     => get_bloginfo( 'name' ),
-				'{{site_tagline}}'   => get_bloginfo( 'description' ),
-				'{{current_year}}'   => date_i18n( 'Y' ),
+				'{{post_title}}'      => get_the_title( $post_id ),
+				'{{post_content}}'    => $post_content,
+				'{{post_excerpt}}'    => get_the_excerpt( $post_id ),
+				'{{post_date}}'       => get_the_date( '', $post_id ),
+				'{{post_author}}'     => get_the_author_meta( 'display_name', (int) get_post_field( 'post_author', $post_id ) ),
+				'{{post_categories}}' => get_the_category_list( ', ', '', $post_id ),
+				'{{post_tags}}'       => get_the_tag_list( '', ', ', '', $post_id ),
+				'{{featured_image}}'  => (string) get_the_post_thumbnail_url( $post_id, 'full' ),
+				'{{permalink}}'       => get_permalink( $post_id ),
+				'{{comment_form}}'    => $this->render_comment_form( $post_id ),
+				'{{comments_list}}'   => $this->render_comments_list( $post_id ),
+				'{{site_title}}'      => get_bloginfo( 'name' ),
+				'{{site_tagline}}'    => get_bloginfo( 'description' ),
+				'{{current_year}}'    => date_i18n( 'Y' ),
 			),
 			$post_id
 		);
