@@ -1,6 +1,6 @@
-# Kit de teste manual — HTML Templates Lite 0.6.0
+# Kit de teste manual — HTML Templates Lite 0.6.3
 
-Um conjunto de 4 templates + assets reais para validar o plugin de ponta a ponta, cobrindo todos os recursos da versão 0.6.0: `{{include}}`, `{{assets_url}}` por template, `{{menu}}`, tags de post, `{{meta:chave}}`, `{{loop}}` com paginação, `{{pagination}}`, arquivos, busca, regras de exibição, comentários, revisões, preview e duplicação.
+Um conjunto de 4 templates + assets reais para validar o plugin de ponta a ponta, cobrindo os recursos atuais: `{{include}}`, `{{assets_url}}` por template, `{{menu}}`, tags de post, `{{meta:chave}}`, `{{loop}}` com paginação, `{{pagination}}`, arquivos, busca, regras de exibição, comentários, revisões, preview, duplicação, e a UI do editor (tags clicáveis, pickers de include/menu, helper de loop).
 
 > **Atenção:** esta pasta é ferramenta de desenvolvimento. Não a inclua no .zip de distribuição do plugin — ela não faz parte do código.
 
@@ -105,6 +105,10 @@ wp-content/uploads/htl-templates/
 
 ### Telas administrativas
 
+- [ ] **Tags do template**: o grupo Site lista `{{site_title}}`, `{{site_tagline}}` e `{{current_year}}`; clique em `{{post_title}}` insere no HTML, na posição do cursor.
+- [ ] Picker de include (editando Kit Post) lista Kit Header/Footer e **não** o template atual; **Inserir include** gera `{{include:kit-header}}` (ou `kit-footer`).
+- [ ] Picker de menu lista a location do tema (ex.: Primary); **Inserir menu** gera `{{menu location="primary"}}` (ou o slug equivalente).
+- [ ] **Inserir lista de posts**: **Título (A–Z)** gera `orderby="title" order="ASC"`; **Paginar nesta listagem** também insere `{{pagination}}`.
 - [ ] **Pré-visualizar template** abre `/?htl_preview=ID` numa aba nova mostrando o template (com header/footer).
 - [ ] **Salvar como cópia** cria "…(cópia)" como rascunho com o mesmo HTML/CSS.
 - [ ] Edite o Kit Header duas vezes e veja o histórico em **Revisões** — o HTML/CSS é versionado.

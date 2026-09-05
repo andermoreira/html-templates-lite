@@ -5,14 +5,11 @@
  *     (usando as configurações que o WordPress já gera via
  *     wp_enqueue_code_editor() — mesmo motor do Editor de Temas nativo).
  *
- *  2. O helper "Inserir lista de posts": monta um bloco
- *     {{loop ...}}...{{/loop}} a partir dos campos simples (tipo de
- *     conteúdo, categoria, quantidade, ordenação) e insere no editor de
- *     HTML, na posição do cursor — pra quem não quer aprender a
- *     sintaxe {{loop}} na mão.
+ *  2. Inserir no HTML, na posição do cursor: o bloco {{loop}}, tags
+ *     clicáveis, {{include:slug}} e {{menu location="..."}}.
  *
- * Se o CodeMirror não estiver disponível por algum motivo, os dois
- * recursos caem pra um fallback simples baseado em <textarea> puro —
+ * Se o CodeMirror não estiver disponível por algum motivo, a inserção
+ * cai pra um fallback simples baseado em <textarea> puro —
  * progressive enhancement, nunca uma dependência obrigatória.
  */
 ( function () {
@@ -45,6 +42,61 @@
 		return !!( el && el.checked );
 	}
 
+	function i18nString( key ) {
+		var i18n = window.htlEditorSettings && window.htlEditorSettings.i18n;
+		return ( i18n && i18n[ key ] ) ? i18n[ key ] : '';
+	}
+
+	function announceInsert( success ) {
+		var live = document.getElementById( 'htl-insert-status' );
+		if ( ! live ) {
+			return;
+		}
+
+		var message = success ? i18nString( 'inserted' ) : i18nString( 'insertFailed' );
+		live.textContent = '';
+		window.setTimeout( function () {
+			live.textContent = message;
+		}, 20 );
+	}
+
+	/**
+	 * Insere texto no editor HTML (cursor/seleção no CodeMirror, ou
+	 * anexa no textarea se o editor nativo não carregou). selectToken,
+	 * quando informado, vira a seleção depois da inserção — usado pra
+	 * {{meta:chave}} / {{meta_url:chave}}, pra o usuário só digitar o
+	 * nome do campo.
+	 */
+	function insertAtCursor( text, selectToken ) {
+		if ( htmlEditorInstance && htmlEditorInstance.codemirror ) {
+			var cm = htmlEditorInstance.codemirror;
+			var from = cm.getCursor( 'from' );
+			cm.replaceSelection( text );
+			if ( selectToken ) {
+				var tokenIndex = text.indexOf( selectToken );
+				if ( tokenIndex !== -1 && text.indexOf( '\n' ) === -1 ) {
+					cm.setSelection(
+						{ line: from.line, ch: from.ch + tokenIndex },
+						{ line: from.line, ch: from.ch + tokenIndex + selectToken.length }
+					);
+				}
+			}
+			cm.focus();
+			announceInsert( true );
+			return;
+		}
+
+		var field = document.getElementById( 'htl_template_html' );
+		if ( ! field ) {
+			announceInsert( false );
+			return;
+		}
+
+		field.value += ( field.value ? '\n' : '' ) + text;
+		field.focus();
+		announceInsert( true );
+	}
+
 	/**
 	 * Monta o texto do bloco {{loop}} a partir dos campos do helper.
 	 * Os atributos usam a mesma sintaxe de um shortcode do WordPress
@@ -57,6 +109,19 @@
 		return ! wrap || wrap.style.display !== 'none';
 	}
 
+	function selectedLoopOrder() {
+		var select = document.getElementById( 'htl-loop-orderby' );
+		if ( ! select || select.selectedIndex < 0 ) {
+			return { orderby: 'date', order: 'DESC' };
+		}
+
+		var option = select.options[ select.selectedIndex ];
+		return {
+			orderby: option.getAttribute( 'data-orderby' ) || 'date',
+			order: option.getAttribute( 'data-order' ) || ''
+		};
+	}
+
 	function buildLoopSnippet() {
 		var postType = fieldValue( 'htl-loop-post-type' ) || 'post';
 		// Se o campo está escondido (post type sem a taxonomia
@@ -65,10 +130,13 @@
 		// tipo de conteúdo.
 		var category = categoryFieldIsVisible() ? fieldValue( 'htl-loop-category' ) : '';
 		var count = parseInt( fieldValue( 'htl-loop-count' ), 10 ) || 5;
-		var orderby = fieldValue( 'htl-loop-orderby' ) || 'date';
+		var sort = selectedLoopOrder();
 		var paged = checkboxIsChecked( 'htl-loop-paged' );
 
-		var attrs = 'post_type="' + postType + '" count="' + count + '" orderby="' + orderby + '"';
+		var attrs = 'post_type="' + postType + '" count="' + count + '" orderby="' + sort.orderby + '"';
+		if ( sort.order ) {
+			attrs += ' order="' + sort.order + '"';
+		}
 		if ( category ) {
 			attrs += ' category="' + category + '"';
 		}
@@ -93,25 +161,6 @@
 		return paged ? block + '{{pagination}}\n' : block;
 	}
 
-	function insertLoopSnippet() {
-		var snippet = buildLoopSnippet();
-
-		if ( htmlEditorInstance && htmlEditorInstance.codemirror ) {
-			// replaceSelection insere na posição do cursor (ou substitui
-			// o texto selecionado, se houver) — bem mais natural do que
-			// sempre jogar o bloco no final do documento.
-			htmlEditorInstance.codemirror.replaceSelection( snippet );
-			htmlEditorInstance.codemirror.focus();
-		} else {
-			// Fallback: CodeMirror não carregou por algum motivo — anexa
-			// no fim do textarea puro, que continua funcional.
-			var field = document.getElementById( 'htl_template_html' );
-			if ( field ) {
-				field.value += ( field.value ? '\n' : '' ) + snippet;
-			}
-		}
-	}
-
 	/**
 	 * Esconde o campo "Categoria" quando o post type escolhido não tem
 	 * essa taxonomia (páginas, a maioria dos CPTs customizados) — em
@@ -133,7 +182,9 @@
 	function initLoopHelper() {
 		var button = document.getElementById( 'htl-loop-insert' );
 		if ( button ) {
-			button.addEventListener( 'click', insertLoopSnippet );
+			button.addEventListener( 'click', function () {
+				insertAtCursor( buildLoopSnippet() );
+			} );
 		}
 
 		var postTypeSelect = document.getElementById( 'htl-loop-post-type' );
@@ -143,9 +194,58 @@
 		}
 	}
 
+	function initTagInsert() {
+		var reference = document.querySelector( '.htl-tag-reference' );
+		if ( ! reference ) {
+			return;
+		}
+
+		reference.addEventListener( 'click', function ( event ) {
+			var button = event.target.closest ? event.target.closest( '.htl-tag' ) : null;
+			if ( ! button || ! reference.contains( button ) ) {
+				return;
+			}
+
+			var text = button.getAttribute( 'data-htl-insert' );
+			if ( ! text ) {
+				return;
+			}
+
+			insertAtCursor( text, button.getAttribute( 'data-htl-select' ) || '' );
+		} );
+	}
+
+	function initPickers() {
+		var includeButton = document.getElementById( 'htl-include-insert' );
+		if ( includeButton ) {
+			includeButton.addEventListener( 'click', function () {
+				var select = document.getElementById( 'htl-include-template' );
+				if ( ! select || ! select.value ) {
+					announceInsert( false );
+					return;
+				}
+				insertAtCursor( '{{include:' + select.value + '}}' );
+			} );
+		}
+
+		var menuButton = document.getElementById( 'htl-menu-insert' );
+		if ( menuButton ) {
+			menuButton.addEventListener( 'click', function () {
+				var select = document.getElementById( 'htl-menu-location' );
+				if ( ! select || ! select.value ) {
+					announceInsert( false );
+					return;
+				}
+				insertAtCursor( '{{menu location="' + select.value + '"}}' );
+			} );
+		}
+	}
+
 	function init() {
 		initEditors();
 		initLoopHelper();
+		initTagInsert();
+		initPickers();
 	}
 
 	if ( document.readyState === 'loading' ) {

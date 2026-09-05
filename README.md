@@ -4,7 +4,7 @@
 
 ![WordPress](https://img.shields.io/badge/WordPress-6.4%2B-21759B?style=flat-square&logo=wordpress)
 ![PHP](https://img.shields.io/badge/PHP-7.4%2B-777BB4?style=flat-square&logo=php&logoColor=white)
-![Versão](https://img.shields.io/badge/vers%C3%A3o-0.6.0-blue?style=flat-square)
+![Versão](https://img.shields.io/badge/vers%C3%A3o-0.6.3-blue?style=flat-square)
 ![Licença](https://img.shields.io/badge/licen%C3%A7a-GPL--2.0%2B-green?style=flat-square)
 
 ## O que é
@@ -25,7 +25,7 @@ O resto do site continua normal, com o tema de sempre. Se um template for exclu�
 - **Shortcodes processados** — plugins de formulário (Contact Form 7, Gravity Forms) entram colando o shortcode no template.
 - **Home e arquivos** — tela de Ajustes para escolher template de home, categoria, tag, autor, data, busca e 404.
 - **Pré-visualizar** e **Salvar como cópia** na tela de edição.
-- **Editor de código** com destaque de sintaxe (CodeMirror nativo do core) + formulário visual que monta o bloco `{{loop}}` pra você.
+- **Editor de código** com destaque de sintaxe (CodeMirror nativo do core). Tags clicáveis inserem no HTML, na posição do cursor; `{{include}}` e `{{menu}}` têm seletor; o formulário **Inserir lista de posts** monta o bloco `{{loop}}`.
 - **Revisões nativas** — histórico de versões do HTML/CSS pela tela padrão de revisões (WP 6.4+).
 - **Posts com senha continuam protegidos** — inclusive dentro de `{{loop}}`.
 - **Extensível sem editar o plugin** — cinco filtros para desenvolvedores.
@@ -34,10 +34,19 @@ O resto do site continua normal, com o tema de sempre. Se um template for exclu�
 
 1. Envie a pasta `html-templates-lite` para `/wp-content/plugins/`, ou instale o .zip em Plugins → Adicionar novo → Enviar plugin.
 2. Ative o plugin.
-3. Vá em **Templates HTML → Adicionar novo**, dê um nome (o slug vira o identificador usado em `{{include:slug}}`) e cole o HTML e o CSS.
+3. Vá em **Templates HTML → Adicionar novo**, dê um nome (o slug vira o identificador usado em `{{include:slug}}`) e escreva o HTML e o CSS. Na mesma tela, **Tags do template** insere placeholders no cursor; **Inserir lista de posts** monta um `{{loop}}`.
 4. Edite qualquer post ou página, escolha o template no seletor "Template HTML/CSS" e publique.
 
 ## Uso
+
+### Editor do template
+
+Abaixo dos campos HTML/CSS, dois painéis recolhíveis:
+
+- **Inserir lista de posts** — escolhe tipo, categoria (some se o tipo não tiver essa taxonomia), quantidade, ordenação (data mais recente/antiga, título A–Z/Z–A, aleatório) e paginação. O botão insere o bloco `{{loop}}` na posição do cursor; com paginação marcada, insere também `{{pagination}}`.
+- **Tags do template** — clique numa tag para inseri-la no cursor. As tags estão agrupadas por contexto (site, post, campo, arquivo). `{{include}}` lista os outros templates publicados; `{{menu}}` lista os locais de menu do tema. Em `{{meta:chave}}`, o editor seleciona `chave` para você só digitar o nome do campo.
+
+Isso não é um page builder: o destino continua sendo HTML. Os painéis só poupam memorizar a sintaxe.
 
 ### Tags dinâmicas
 

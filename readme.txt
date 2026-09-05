@@ -4,7 +4,7 @@ Tags: template, html, css, no-theme, lightweight
 Requires at least: 6.4
 Tested up to: 6.8
 Requires PHP: 7.4
-Stable tag: 0.6.2
+Stable tag: 0.6.3
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -23,7 +23,7 @@ A maioria dos construtores visuais (Elementor, Divi, Bricks, Oxygen) resolve "fu
 * Um custom post type "Template HTML" onde você escreve o HTML e o CSS uma vez.
 * Em qualquer post/página, um `<select>` escolhe qual template usar — o mesmo template pode ser reaproveitado em quantas páginas quiser.
 * Um template pode incluir outro com `{{include:slug-do-template}}` (ex.: um "header" e um "footer" reusáveis, incluídos dentro de vários templates de página), com proteção contra loops de inclusão.
-* `{{loop post_type="post" category="noticias" count="5"}}...{{/loop}}` traz uma lista de posts de verdade (com filtro por categoria/tag) pra dentro do template — e a tela de edição tem um formulário visual que monta esse bloco pra você, sem precisar escrever a sintaxe na mão. O campo "Categoria" some sozinho quando o tipo de conteúdo escolhido não usa essa taxonomia.
+* `{{loop post_type="post" category="noticias" count="5"}}...{{/loop}}` traz uma lista de posts de verdade (com filtro por categoria/tag) pra dentro do template. O formulário **Inserir lista de posts** monta esse bloco na posição do cursor (ordenação inclui A–Z e data mais antiga; o campo Categoria some quando o tipo não usa essa taxonomia).
 * Paginação nativa em templates de arquivo: com `paged="true"` no `{{loop}}` e a tag `{{pagination}}`, a navegação entre páginas funciona (na /page/2/ o loop lista os próximos posts em vez de repetir os primeiros).
 * `{{assets_url}}` aponta pra pasta de assets do template (`uploads/htl-templates/{slug}/`, criada no salvamento) — envie os arquivos do template pronto (css/js/fonts/imagens) por FTP e referencie com caminhos relativos à tag. Um template incluído com `{{include}}` usa a própria pasta dele.
 * `{{menu location="primary"}}` imprime o menu do WordPress (o `<ul>` com as classes nativas, sem wrapper) na marcação do template.
@@ -33,7 +33,7 @@ A maioria dos construtores visuais (Elementor, Divi, Bricks, Oxygen) resolve "fu
 * Botão "Pré-visualizar template" na tela de edição — mostra como o template fica sem precisar salvar numa página de verdade primeiro.
 * Botão "Salvar como cópia" — duplica um template existente pra partir dele em vez de começar do zero.
 * Só usuários com a capability `unfiltered_html` (administradores, por padrão) veem a tela de criação/edição de templates — quem não tem essa permissão nem vê "Templates HTML" no menu.
-* Editor de código com destaque de sintaxe (reaproveita o CodeMirror que já vem no core do WordPress).
+* Editor de código com destaque de sintaxe (reaproveita o CodeMirror que já vem no core do WordPress). Na mesma tela, **Tags do template** insere placeholders no cursor (agrupadas por contexto: site, post, campo, arquivo). `{{include}}` e `{{menu}}` têm seletor — outros templates publicados e locais de menu do tema — em vez de você lembrar slug ou location.
 * Tags dinâmicas simples: `{{post_title}}`, `{{post_content}}`, `{{post_excerpt}}`, `{{featured_image}}`, `{{permalink}}`, `{{site_title}}`, `{{site_tagline}}`, `{{current_year}}`.
 * Posts protegidos por senha continuam protegidos — mostra o formulário de senha nativo do WP em vez do template.
 * Histórico de revisão nativo do WordPress no HTML/CSS de cada template (a partir do WP 6.4).
@@ -69,7 +69,7 @@ Este plugin nasceu de uma pesquisa sobre alternativas ao Oxygen Builder e ao eco
 
 1. Envie a pasta `html-templates-lite` inteira para `/wp-content/plugins/`, ou instale o .zip por Plugins → Adicionar novo → Enviar plugin.
 2. Ative o plugin no menu Plugins.
-3. Vá em Templates HTML → Adicionar novo, dê um nome (o slug vira o identificador usado em `{{include:slug}}`), e cole seu HTML e CSS.
+3. Vá em Templates HTML → Adicionar novo, dê um nome (o slug vira o identificador usado em `{{include:slug}}`) e escreva o HTML e o CSS. Na mesma tela, **Tags do template** insere placeholders no cursor; **Inserir lista de posts** monta um `{{loop}}`.
 4. Edite qualquer post ou página, escolha esse template no seletor "Template HTML/CSS", e publique.
 
 == Frequently Asked Questions ==
@@ -93,10 +93,13 @@ Sim, o botão "Salvar como cópia" cria um novo template (como rascunho) com o m
 Não — só quem tem a capability `unfiltered_html` (administradores, por padrão, em instalação single-site) vê e acessa "Templates HTML" no menu. Isso evita confusão: sem essa permissão, HTML potencialmente perigoso seria filtrado ao salvar, e a pessoa acharia que o plugin "comeu" o que ela escreveu.
 
 = Como eu trago uma lista de posts (tipo um blog) pra dentro do template? =
-Na tela de edição do template, use o formulário "Inserir lista de posts": escolha o tipo de conteúdo, a categoria (opcional), quantidade e ordenação, e clique em "Inserir bloco de posts no HTML" — o bloco `{{loop}}...{{/loop}}` correspondente é inserido automaticamente na posição do cursor, sem precisar escrever nada disso na mão. Dentro do bloco, use as mesmas tags de sempre (`{{post_title}}`, `{{post_excerpt}}`, `{{permalink}}`) — elas passam a se referir a cada post da lista.
+Na tela de edição do template, abra **Inserir lista de posts**: escolha o tipo de conteúdo, a categoria, quantidade e ordenação, e clique em **Inserir lista no HTML** — o bloco `{{loop}}...{{/loop}}` entra na posição do cursor. Dentro do bloco, as mesmas tags de sempre (`{{post_title}}`, `{{post_excerpt}}`, `{{permalink}}`) passam a se referir a cada post da lista. Você também pode clicar as tags em **Tags do template** em vez de digitá-las.
+
+= Como inserir uma tag sem digitar a sintaxe? =
+Abra **Tags do template** e clique no chip. A tag entra no HTML, na posição do cursor. `{{include}}` lista os outros templates publicados; `{{menu}}` lista os locais de menu do tema. Em `{{meta:chave}}`, o editor seleciona `chave` para você só digitar o nome do campo. Isso não é um construtor visual: o destino continua sendo HTML.
 
 = Preciso saber PHP? =
-Não. HTML e CSS são suficientes para o uso básico. Dados dinâmicos usam tags de texto simples como `{{post_title}}`, e reuso de trechos usa `{{include:slug}}`, sem nenhuma sintaxe de código.
+Não. HTML e CSS são suficientes para o uso básico. Dados dinâmicos usam tags como `{{post_title}}` (clicáveis em **Tags do template**), e reuso de trechos usa `{{include:slug}}`, sem PHP.
 
 = É seguro colar HTML de qualquer lugar? =
 Só usuários com a capability `unfiltered_html` (administradores, por padrão, em instalação single-site) podem salvar HTML sem filtro algum. Qualquer outro papel tem o conteúdo passado pelo `wp_kses_post` ao salvar — a mesma sanitização que o WordPress já usa no conteúdo normal de um post.
@@ -114,7 +117,7 @@ Sim, a partir da 0.5.0. Vá em Templates HTML → Ajustes e escolha um template 
 Não — dentro de um `{{loop}}`, se você não informar o atributo `category`, ele é preenchido sozinho com a categoria da URL atual (o mesmo vale pra `tag`, `author` e `s`/busca). Um valor que você escrever explicitamente sempre tem prioridade sobre esse preenchimento automático.
 
 = Como paginar um template de categoria/arquivo? =
-No formulário "Inserir lista de posts", marque "Paginação (templates de arquivo)" — ou adicione `paged="true"` no bloco `{{loop}}` — e coloque `{{pagination}}` onde a navegação deve aparecer. Na /page/2/, /3/... o loop passa a listar os posts seguintes em vez de repetir os primeiros. O número de páginas segue Ajustes → Leitura ("No máximo X posts por página").
+No formulário **Inserir lista de posts**, marque **Paginar nesta listagem** — ou adicione `paged="true"` no bloco `{{loop}}` — e coloque `{{pagination}}` onde a navegação deve aparecer. Na /page/2/, /3/... o loop passa a listar os posts seguintes em vez de repetir os primeiros. O número de páginas segue Ajustes → Leitura ("No máximo X posts por página"). Marque paginação só em home, categoria, tag, autor ou busca.
 
 = Como uso os arquivos (css/js/fonts/imagens) de um template pronto? =
 Salve o template uma vez: o plugin cria a pasta `uploads/htl-templates/{slug}/` e mostra o caminho na tela de edição. Envie os arquivos por FTP ou pelo gerenciador de arquivos do host e referencie com `{{assets_url}}` — ex.: `<link rel="stylesheet" href="{{assets_url}}/css/main.css">`. Atenção: se o slug do template mudar, a pasta muda junto (os arquivos precisam ser movidos).
@@ -132,6 +135,12 @@ Em Templates HTML → Ajustes, seção "Posts e páginas por regra": escolha o t
 * Assets do template são enviados por FTP/gerenciador de arquivos — o plugin não faz upload, pra não criar superfície de ataque.
 
 == Changelog ==
+
+= 0.6.3 =
+* Tags do template na tela de edição agora são clicáveis: inserem no HTML, na posição do cursor, agrupadas por contexto (site, post, campo, arquivo).
+* Incluídas na referência as tags que o renderer já tinha: `{{site_title}}`, `{{site_tagline}}`, `{{current_year}}`.
+* Pickers para `{{include:slug}}` (outros templates publicados) e `{{menu location="..."}}` (locais registrados pelo tema), sem novos accordions de widgets.
+* Helper de loop: ordenação A–Z/Z–A e data mais antiga; o bloco gerado passa a emitir `order`. Layout em duas colunas com rótulos acima dos campos.
 
 = 0.6.2 =
 * Segurança (auditoria): `{{meta:chave}}` agora sai sempre escapada (`esc_html`) — post meta não passa por kses no save do core, e o valor de um campo escrito por autor sem `unfiltered_html` podia virar XSS armazenado na página do template.

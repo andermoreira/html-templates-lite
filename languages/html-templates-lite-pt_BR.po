@@ -4,7 +4,7 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: HTML Templates Lite 0.6.1\n"
+"Project-Id-Version: HTML Templates Lite 0.6.3\n"
 "Report-Msgid-Bugs-To: https://github.com/andermoreira/html-templates-lite/issues\n"
 "POT-Creation-Date: 2026-09-05 00:00-0300\n"
 "MIME-Version: 1.0\n"
@@ -124,16 +124,36 @@ msgid "Asset folder for this template (upload css/js/fonts via FTP and reference
 msgstr "Pasta de assets deste template (envie css/js/fonts por FTP e referencie com %s no HTML): %s"
 
 #: includes/class-htl-metabox.php
-msgid "Insert post list (no code needed)"
-msgstr "Inserir lista de posts (sem escrever código)"
+msgid "Inserted into the HTML, at the cursor position."
+msgstr "Inserido no HTML, na posição do cursor."
 
 #: includes/class-htl-metabox.php
-msgid "Builds a ready {{loop}}...{{/loop}} block and inserts it into the HTML at the cursor position."
-msgstr "Monta um bloco {{loop}}...{{/loop}} pronto e insere no HTML, na posição onde o cursor estiver."
+msgid "Could not insert. Reload the page and try again."
+msgstr "Não foi possível inserir. Recarregue a tela e tente de novo."
+
+#: includes/class-htl-metabox.php
+msgid "HTML"
+msgstr "HTML"
+
+#: includes/class-htl-metabox.php
+msgid "CSS"
+msgstr "CSS"
+
+#: includes/class-htl-metabox.php
+msgid "Insert post list"
+msgstr "Inserir lista de posts"
+
+#: includes/class-htl-metabox.php
+msgid "Builds the {{loop}} block and inserts it into the HTML, at the cursor position."
+msgstr "Monta o bloco {{loop}} e insere no HTML, na posição do cursor."
 
 #: includes/class-htl-metabox.php includes/class-htl-settings.php
 msgid "Content type"
 msgstr "Tipo de conteúdo"
+
+#: includes/class-htl-metabox.php
+msgid "Category"
+msgstr "Categoria"
 
 #: includes/class-htl-metabox.php includes/class-htl-settings.php
 msgid "Category (optional)"
@@ -156,16 +176,32 @@ msgid "Date (newest first)"
 msgstr "Data (mais recente)"
 
 #: includes/class-htl-metabox.php
+msgid "Date (oldest first)"
+msgstr "Data (mais antiga)"
+
+#: includes/class-htl-metabox.php
+msgid "Title (A–Z)"
+msgstr "Título (A–Z)"
+
+#: includes/class-htl-metabox.php
+msgid "Title (Z–A)"
+msgstr "Título (Z–A)"
+
+#: includes/class-htl-metabox.php
 msgid "Random"
 msgstr "Aleatório"
 
 #: includes/class-htl-metabox.php
-msgid "Pagination (archive templates)"
-msgstr "Paginação (templates de arquivo)"
+msgid "Paginate this list"
+msgstr "Paginar nesta listagem"
 
 #: includes/class-htl-metabox.php
-msgid "Insert post block into the HTML"
-msgstr "Inserir bloco de posts no HTML"
+msgid "Only on home, category, tag, author or search. Also inserts {{pagination}}. Follows Settings → Reading."
+msgstr "Só em home, categoria, tag, autor ou busca. Também insere {{pagination}}. Segue Ajustes → Leitura."
+
+#: includes/class-htl-metabox.php
+msgid "Insert list into the HTML"
+msgstr "Inserir lista no HTML"
 
 #: includes/class-htl-metabox.php
 msgid "Your user does not have the \"unfiltered_html\" capability — saved HTML will be filtered for security (potentially dangerous tags and attributes are removed automatically)."
@@ -176,20 +212,140 @@ msgid "Template tags"
 msgstr "Tags do template"
 
 #: includes/class-htl-metabox.php
-msgid "Content tags: %s"
-msgstr "Tags de conteúdo: %s"
+msgid "Click to insert into the HTML, at the cursor position."
+msgstr "Clique para inserir no HTML, na posição do cursor."
 
 #: includes/class-htl-metabox.php
-msgid "Fields and interaction: %s"
-msgstr "Campos e interação: %s"
+msgid "Site (any template)"
+msgstr "Site (qualquer template)"
 
 #: includes/class-htl-metabox.php
-msgid "Include another template inside this one with %s, using the slug (URL-friendly name) of the included template."
-msgstr "Inclua outro template dentro deste com %s, usando o slug (nome amigável na URL) do template incluído."
+msgid "Site name"
+msgstr "Nome do site"
 
 #: includes/class-htl-metabox.php
-msgid "In archive/home/search templates: %s — pagination follows the main WordPress query (Settings → Reading)."
-msgstr "Em templates de arquivo/home/busca: %s — a paginação usa a consulta principal do WordPress (Ajustes → Leitura)."
+msgid "Site tagline"
+msgstr "Descrição do site"
+
+#: includes/class-htl-metabox.php
+msgid "Current year"
+msgstr "Ano atual"
+
+#: includes/class-htl-metabox.php
+msgid "URL of this template's file folder"
+msgstr "URL da pasta de arquivos deste template"
+
+#: includes/class-htl-metabox.php
+msgid "Post content (the page or a loop item)"
+msgstr "Conteúdo do post (página ou item do loop)"
+
+#: includes/class-htl-metabox.php
+msgid "Content"
+msgstr "Conteúdo"
+
+#: includes/class-htl-metabox.php
+msgid "Excerpt"
+msgstr "Resumo"
+
+#: includes/class-htl-metabox.php
+msgid "Date"
+msgstr "Data"
+
+#: includes/class-htl-metabox.php
+msgid "Author"
+msgstr "Autor"
+
+#: includes/class-htl-metabox.php
+msgid "Category links"
+msgstr "Links das categorias"
+
+#: includes/class-htl-metabox.php
+msgid "Tag links"
+msgstr "Links das tags"
+
+#: includes/class-htl-metabox.php
+msgid "Featured image URL (use in an img src)"
+msgstr "URL da imagem destacada (use no src de um img)"
+
+#: includes/class-htl-metabox.php
+msgid "Permalink URL"
+msgstr "URL permanente"
+
+#: includes/class-htl-metabox.php
+msgid "Comment form"
+msgstr "Formulário de comentários"
+
+#: includes/class-htl-metabox.php
+msgid "Comments list"
+msgstr "Lista de comentários"
+
+#: includes/class-htl-metabox.php
+msgid "Custom field"
+msgstr "Campo personalizado"
+
+#: includes/class-htl-metabox.php
+msgid "Replace chave with the field name. Keys that start with _ are not output."
+msgstr "Substitua chave pelo nome do campo. Campos que começam com _ não saem."
+
+#: includes/class-htl-metabox.php
+msgid "Field value as text"
+msgstr "Valor do campo como texto"
+
+#: includes/class-htl-metabox.php
+msgid "Field value as a URL"
+msgstr "Valor do campo como URL"
+
+#: includes/class-htl-metabox.php
+msgid "Include template and menu"
+msgstr "Incluir template e menu"
+
+#: includes/class-htl-metabox.php
+msgid "Template to include"
+msgstr "Template a incluir"
+
+#: includes/class-htl-metabox.php
+msgid "No other templates published. Publish a header or footer to include it here."
+msgstr "Nenhum outro template publicado. Publique um header ou footer para incluir aqui."
+
+#: includes/class-htl-metabox.php
+msgid "Insert include"
+msgstr "Inserir include"
+
+#: includes/class-htl-metabox.php
+msgid "Menu location"
+msgstr "Local do menu"
+
+#: includes/class-htl-metabox.php
+msgid "This theme has not registered menu locations. Create a menu under Appearance → Menus."
+msgstr "Este tema não registrou locais de menu. Crie um menu em Aparência → Menus."
+
+#: includes/class-htl-metabox.php
+msgid "Insert menu"
+msgstr "Inserir menu"
+
+#: includes/class-htl-metabox.php
+msgid "Archive, home and search"
+msgstr "Arquivo, home e busca"
+
+#: includes/class-htl-metabox.php
+msgid "Archive title"
+msgstr "Título do arquivo"
+
+#: includes/class-htl-metabox.php
+msgid "Archive description"
+msgstr "Descrição do arquivo"
+
+#: includes/class-htl-metabox.php
+msgid "Search term"
+msgstr "Termo buscado"
+
+#: includes/class-htl-metabox.php
+msgid "Page navigation; hidden when there is only one page"
+msgstr "Navegação entre páginas; some se só houver uma"
+
+#: includes/class-htl-metabox.php
+msgid "Insert %s into the HTML"
+msgstr "Inserir %s no HTML"
 
 #: includes/class-htl-metabox.php
 msgid "Invalid template."

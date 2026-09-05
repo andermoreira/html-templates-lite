@@ -160,9 +160,13 @@ class HTL_Metabox {
 			'htl-admin',
 			'htlEditorSettings',
 			array(
-				'html'                   => $html_settings,
-				'css'                    => $css_settings,
-				'postTypesWithCategory'  => $post_types_with_category,
+				'html'                  => $html_settings,
+				'css'                   => $css_settings,
+				'postTypesWithCategory' => $post_types_with_category,
+				'i18n'                  => array(
+					'inserted'     => __( 'Inserted into the HTML, at the cursor position.', 'html-templates-lite' ),
+					'insertFailed' => __( 'Could not insert. Reload the page and try again.', 'html-templates-lite' ),
+				),
 			)
 		);
 
@@ -289,19 +293,19 @@ class HTL_Metabox {
 		</div>
 
 		<details class="htl-loop-helper">
-			<summary><?php esc_html_e( 'Insert post list (no code needed)', 'html-templates-lite' ); ?></summary>
+			<summary><?php esc_html_e( 'Insert post list', 'html-templates-lite' ); ?></summary>
 			<fieldset>
-				<legend class="screen-reader-text"><?php esc_html_e( 'Insert post list (no code needed)', 'html-templates-lite' ); ?></legend>
-				<p class="description"><?php esc_html_e( 'Builds a ready {{loop}}...{{/loop}} block and inserts it into the HTML at the cursor position.', 'html-templates-lite' ); ?></p>
+				<legend class="screen-reader-text"><?php esc_html_e( 'Insert post list', 'html-templates-lite' ); ?></legend>
+				<p class="description"><?php esc_html_e( 'Builds the {{loop}} block and inserts it into the HTML, at the cursor position.', 'html-templates-lite' ); ?></p>
 				<div class="htl-loop-helper__fields">
-					<label><?php esc_html_e( 'Content type', 'html-templates-lite' ); ?><br />
+					<label class="htl-loop-helper__field" for="htl-loop-post-type"><?php esc_html_e( 'Content type', 'html-templates-lite' ); ?>
 						<select id="htl-loop-post-type">
 							<?php foreach ( get_post_types( array( 'public' => true ), 'objects' ) as $htl_pt ) : ?>
 								<option value="<?php echo esc_attr( $htl_pt->name ); ?>"><?php echo esc_html( $htl_pt->label ); ?></option>
 							<?php endforeach; ?>
 						</select>
 					</label>
-					<label id="htl-loop-category-wrap"><?php esc_html_e( 'Category (optional)', 'html-templates-lite' ); ?><br />
+					<label id="htl-loop-category-wrap" class="htl-loop-helper__field" for="htl-loop-category"><?php esc_html_e( 'Category', 'html-templates-lite' ); ?>
 						<select id="htl-loop-category">
 							<option value=""><?php esc_html_e( '— All —', 'html-templates-lite' ); ?></option>
 							<?php foreach ( get_categories( array( 'hide_empty' => false ) ) as $htl_cat ) : ?>
@@ -309,69 +313,204 @@ class HTL_Metabox {
 							<?php endforeach; ?>
 						</select>
 					</label>
-					<label><?php esc_html_e( 'Count', 'html-templates-lite' ); ?><br />
+					<label class="htl-loop-helper__field" for="htl-loop-count"><?php esc_html_e( 'Count', 'html-templates-lite' ); ?>
 						<input type="number" id="htl-loop-count" class="htl-loop-helper__count" value="5" min="1" max="50" />
 					</label>
-					<label><?php esc_html_e( 'Order by', 'html-templates-lite' ); ?><br />
+					<label class="htl-loop-helper__field" for="htl-loop-orderby"><?php esc_html_e( 'Order by', 'html-templates-lite' ); ?>
 						<select id="htl-loop-orderby">
-							<option value="date"><?php esc_html_e( 'Date (newest first)', 'html-templates-lite' ); ?></option>
-							<option value="title"><?php esc_html_e( 'Title', 'html-templates-lite' ); ?></option>
-							<option value="rand"><?php esc_html_e( 'Random', 'html-templates-lite' ); ?></option>
+							<option value="date-desc" data-orderby="date" data-order="DESC"><?php esc_html_e( 'Date (newest first)', 'html-templates-lite' ); ?></option>
+							<option value="date-asc" data-orderby="date" data-order="ASC"><?php esc_html_e( 'Date (oldest first)', 'html-templates-lite' ); ?></option>
+							<option value="title-asc" data-orderby="title" data-order="ASC"><?php esc_html_e( 'Title (A–Z)', 'html-templates-lite' ); ?></option>
+							<option value="title-desc" data-orderby="title" data-order="DESC"><?php esc_html_e( 'Title (Z–A)', 'html-templates-lite' ); ?></option>
+							<option value="rand" data-orderby="rand"><?php esc_html_e( 'Random', 'html-templates-lite' ); ?></option>
 						</select>
 					</label>
-					<label class="htl-loop-helper__paged">
-						<input type="checkbox" id="htl-loop-paged" />
-						<?php esc_html_e( 'Pagination (archive templates)', 'html-templates-lite' ); ?>
-					</label>
+					<div class="htl-loop-helper__paged">
+						<label class="htl-loop-helper__paged-line">
+							<input type="checkbox" id="htl-loop-paged" />
+							<?php esc_html_e( 'Paginate this list', 'html-templates-lite' ); ?>
+						</label>
+						<p class="description"><?php esc_html_e( 'Only on home, category, tag, author or search. Also inserts {{pagination}}. Follows Settings → Reading.', 'html-templates-lite' ); ?></p>
+					</div>
 				</div>
 				<p>
-					<button type="button" id="htl-loop-insert" class="button"><?php esc_html_e( 'Insert post block into the HTML', 'html-templates-lite' ); ?></button>
+					<button type="button" id="htl-loop-insert" class="button"><?php esc_html_e( 'Insert list into the HTML', 'html-templates-lite' ); ?></button>
 				</p>
 			</fieldset>
 		</details>
 
+		<?php $this->render_tag_reference( $post ); ?>
+
+		<p id="htl-insert-status" class="screen-reader-text" role="status" aria-live="polite" aria-atomic="true"></p>
+		<?php
+	}
+
+	/**
+	 * Click-to-insert tag reference under the HTML editor: groups by
+	 * context, chips for simple tags, pickers only where WordPress has
+	 * a real choice (include slug, menu location).
+	 */
+	private function render_tag_reference( $post ) {
+		$include_templates = $this->get_includable_templates( (int) $post->ID );
+		$menu_locations    = get_registered_nav_menus();
+		?>
 		<details class="htl-tag-reference">
 			<summary><?php esc_html_e( 'Template tags', 'html-templates-lite' ); ?></summary>
-			<ul class="description">
-				<li>
-					<?php
-					printf(
-						/* translators: %s: lista de tags dinâmicas disponíveis, cada uma dentro de <code> */
-						esc_html__( 'Content tags: %s', 'html-templates-lite' ),
-						'<code>{{post_title}}</code>, <code>{{post_content}}</code>, <code>{{post_excerpt}}</code>, <code>{{post_date}}</code>, <code>{{post_author}}</code>, <code>{{post_categories}}</code>, <code>{{post_tags}}</code>, <code>{{featured_image}}</code>, <code>{{permalink}}</code>'
-					);
-					?>
-				</li>
-				<li>
-					<?php
-					printf(
-						/* translators: %s: lista de tags de campos/interação, cada uma dentro de <code> */
-						esc_html__( 'Fields and interaction: %s', 'html-templates-lite' ),
-						'<code>{{meta:chave}}</code>, <code>{{meta_url:chave}}</code>, <code>{{assets_url}}</code>, <code>{{menu location="primary"}}</code>, <code>{{comment_form}}</code>, <code>{{comments_list}}</code>'
-					);
-					?>
-				</li>
-				<li>
-					<?php
-					printf(
-						/* translators: %s: exemplo de tag de inclusão, dentro de <code> */
-						esc_html__( 'Include another template inside this one with %s, using the slug (URL-friendly name) of the included template.', 'html-templates-lite' ),
-						'<code>{{include:slug-do-template}}</code>'
-					);
-					?>
-				</li>
-				<li>
-					<?php
-					printf(
-						/* translators: %s: lista de tags de arquivo, cada uma dentro de <code> */
-						esc_html__( 'In archive/home/search templates: %s — pagination follows the main WordPress query (Settings → Reading).', 'html-templates-lite' ),
-						'<code>{{archive_title}}</code>, <code>{{archive_description}}</code>, <code>{{search_query}}</code>, <code>{{pagination}}</code>'
-					);
-					?>
-				</li>
-			</ul>
+			<div class="htl-tag-reference__body">
+				<p class="description"><?php esc_html_e( 'Click to insert into the HTML, at the cursor position.', 'html-templates-lite' ); ?></p>
+
+				<div class="htl-tag-reference__group">
+					<p class="htl-tag-reference__group-title"><?php esc_html_e( 'Site (any template)', 'html-templates-lite' ); ?></p>
+					<ul class="htl-tag-reference__list">
+						<?php
+						$this->render_tag_chip( '{{site_title}}', __( 'Site name', 'html-templates-lite' ) );
+						$this->render_tag_chip( '{{site_tagline}}', __( 'Site tagline', 'html-templates-lite' ) );
+						$this->render_tag_chip( '{{current_year}}', __( 'Current year', 'html-templates-lite' ) );
+						$this->render_tag_chip( '{{assets_url}}', __( "URL of this template's file folder", 'html-templates-lite' ) );
+						?>
+					</ul>
+				</div>
+
+				<div class="htl-tag-reference__group">
+					<p class="htl-tag-reference__group-title"><?php esc_html_e( 'Post content (the page or a loop item)', 'html-templates-lite' ); ?></p>
+					<ul class="htl-tag-reference__list">
+						<?php
+						$this->render_tag_chip( '{{post_title}}', __( 'Title', 'html-templates-lite' ) );
+						$this->render_tag_chip( '{{post_content}}', __( 'Content', 'html-templates-lite' ) );
+						$this->render_tag_chip( '{{post_excerpt}}', __( 'Excerpt', 'html-templates-lite' ) );
+						$this->render_tag_chip( '{{post_date}}', __( 'Date', 'html-templates-lite' ) );
+						$this->render_tag_chip( '{{post_author}}', __( 'Author', 'html-templates-lite' ) );
+						$this->render_tag_chip( '{{post_categories}}', __( 'Category links', 'html-templates-lite' ) );
+						$this->render_tag_chip( '{{post_tags}}', __( 'Tag links', 'html-templates-lite' ) );
+						$this->render_tag_chip( '{{featured_image}}', __( 'Featured image URL (use in an img src)', 'html-templates-lite' ) );
+						$this->render_tag_chip( '{{permalink}}', __( 'Permalink URL', 'html-templates-lite' ) );
+						$this->render_tag_chip( '{{comment_form}}', __( 'Comment form', 'html-templates-lite' ) );
+						$this->render_tag_chip( '{{comments_list}}', __( 'Comments list', 'html-templates-lite' ) );
+						?>
+					</ul>
+				</div>
+
+				<div class="htl-tag-reference__group">
+					<p class="htl-tag-reference__group-title"><?php esc_html_e( 'Custom field', 'html-templates-lite' ); ?></p>
+					<p class="description"><?php esc_html_e( 'Replace chave with the field name. Keys that start with _ are not output.', 'html-templates-lite' ); ?></p>
+					<ul class="htl-tag-reference__list">
+						<?php
+						$this->render_tag_chip( '{{meta:chave}}', __( 'Field value as text', 'html-templates-lite' ), 'chave' );
+						$this->render_tag_chip( '{{meta_url:chave}}', __( 'Field value as a URL', 'html-templates-lite' ), 'chave' );
+						?>
+					</ul>
+				</div>
+
+				<div class="htl-tag-reference__group">
+					<p class="htl-tag-reference__group-title"><?php esc_html_e( 'Include template and menu', 'html-templates-lite' ); ?></p>
+					<div class="htl-tag-reference__pickers">
+						<div class="htl-tag-reference__picker">
+							<label<?php echo empty( $include_templates ) ? '' : ' for="htl-include-template"'; ?>><?php esc_html_e( 'Template to include', 'html-templates-lite' ); ?></label>
+							<?php if ( empty( $include_templates ) ) : ?>
+								<p class="description"><?php esc_html_e( 'No other templates published. Publish a header or footer to include it here.', 'html-templates-lite' ); ?></p>
+							<?php else : ?>
+								<div class="htl-tag-reference__picker-controls">
+									<select id="htl-include-template">
+										<?php foreach ( $include_templates as $include_template ) : ?>
+											<option value="<?php echo esc_attr( $include_template->post_name ); ?>">
+												<?php
+												echo esc_html(
+													'' !== $include_template->post_title
+														? $include_template->post_title . ' (' . $include_template->post_name . ')'
+														: $include_template->post_name
+												);
+												?>
+											</option>
+										<?php endforeach; ?>
+									</select>
+									<button type="button" id="htl-include-insert" class="button"><?php esc_html_e( 'Insert include', 'html-templates-lite' ); ?></button>
+								</div>
+							<?php endif; ?>
+						</div>
+						<div class="htl-tag-reference__picker">
+							<label<?php echo empty( $menu_locations ) ? '' : ' for="htl-menu-location"'; ?>><?php esc_html_e( 'Menu location', 'html-templates-lite' ); ?></label>
+							<?php if ( empty( $menu_locations ) ) : ?>
+								<p class="description"><?php esc_html_e( 'This theme has not registered menu locations. Create a menu under Appearance → Menus.', 'html-templates-lite' ); ?></p>
+							<?php else : ?>
+								<div class="htl-tag-reference__picker-controls">
+									<select id="htl-menu-location">
+										<?php foreach ( $menu_locations as $location_slug => $location_label ) : ?>
+											<option value="<?php echo esc_attr( $location_slug ); ?>"><?php echo esc_html( $location_label ); ?></option>
+										<?php endforeach; ?>
+									</select>
+									<button type="button" id="htl-menu-insert" class="button"><?php esc_html_e( 'Insert menu', 'html-templates-lite' ); ?></button>
+								</div>
+							<?php endif; ?>
+						</div>
+					</div>
+				</div>
+
+				<div class="htl-tag-reference__group">
+					<p class="htl-tag-reference__group-title"><?php esc_html_e( 'Archive, home and search', 'html-templates-lite' ); ?></p>
+					<ul class="htl-tag-reference__list">
+						<?php
+						$this->render_tag_chip( '{{archive_title}}', __( 'Archive title', 'html-templates-lite' ) );
+						$this->render_tag_chip( '{{archive_description}}', __( 'Archive description', 'html-templates-lite' ) );
+						$this->render_tag_chip( '{{search_query}}', __( 'Search term', 'html-templates-lite' ) );
+						$this->render_tag_chip( '{{pagination}}', __( 'Page navigation; hidden when there is only one page', 'html-templates-lite' ) );
+						?>
+					</ul>
+				</div>
+			</div>
 		</details>
 		<?php
+	}
+
+	/**
+	 * One click-to-insert chip plus a one-line meaning. $select is a
+	 * substring to highlight after insert (the "chave" placeholder).
+	 */
+	private function render_tag_chip( $tag, $description, $select = '' ) {
+		$insert_label = sprintf(
+			/* translators: %s: template tag, e.g. {{post_title}} */
+			__( 'Insert %s into the HTML', 'html-templates-lite' ),
+			$tag
+		);
+		?>
+		<li class="htl-tag-reference__item">
+			<button
+				type="button"
+				class="htl-tag"
+				data-htl-insert="<?php echo esc_attr( $tag ); ?>"
+				<?php if ( '' !== $select ) : ?>
+					data-htl-select="<?php echo esc_attr( $select ); ?>"
+				<?php endif; ?>
+				aria-label="<?php echo esc_attr( $insert_label ); ?>"
+			><?php echo esc_html( $tag ); ?></button>
+			<span class="description"><?php echo esc_html( $description ); ?></span>
+		</li>
+		<?php
+	}
+
+	/**
+	 * Published templates that can be {{include}}d from $current_id —
+	 * excludes the template being edited and any without a slug.
+	 */
+	private function get_includable_templates( $current_id ) {
+		$templates = get_posts(
+			array(
+				'post_type'      => HTL_Post_Type::SLUG,
+				'post_status'    => 'publish',
+				'posts_per_page' => -1,
+				'orderby'        => 'title',
+				'order'          => 'ASC',
+				'post__not_in'   => array( $current_id ),
+			)
+		);
+
+		$usable = array();
+		foreach ( $templates as $template ) {
+			if ( '' !== $template->post_name ) {
+				$usable[] = $template;
+			}
+		}
+
+		return $usable;
 	}
 
 	/**
