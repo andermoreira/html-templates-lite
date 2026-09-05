@@ -21,6 +21,9 @@ class HTL_Post_Type {
 	 * register_post_type() abaixo. Qualquer uma dessas, quando checada,
 	 * é redirecionada pra exigir `unfiltered_html` (ver
 	 * require_unfiltered_html_for_templates()).
+	 *
+	 * Nota: não existe cap "create_htl_templates" — com capability_type,
+	 * `create_posts` mapeia pra `edit_htl_templates`, que já está aqui.
 	 */
 	const TEMPLATE_CAPS = array(
 		'edit_htl_template',
@@ -36,7 +39,6 @@ class HTL_Post_Type {
 		'delete_others_htl_templates',
 		'edit_private_htl_templates',
 		'edit_published_htl_templates',
-		'create_htl_templates',
 	);
 
 	public function __construct() {
@@ -49,19 +51,23 @@ class HTL_Post_Type {
 			self::SLUG,
 			array(
 				'labels'          => array(
-					'name'          => __( 'Templates HTML', 'html-templates-lite' ),
-					'singular_name' => __( 'Template HTML', 'html-templates-lite' ),
-					'add_new_item'  => __( 'Adicionar novo template', 'html-templates-lite' ),
-					'edit_item'     => __( 'Editar template', 'html-templates-lite' ),
-					'all_items'     => __( 'Todos os templates', 'html-templates-lite' ),
-					'search_items'  => __( 'Buscar templates', 'html-templates-lite' ),
-					'not_found'     => __( 'Nenhum template encontrado', 'html-templates-lite' ),
+					'name'          => __( 'HTML Templates', 'html-templates-lite' ),
+					'singular_name' => __( 'HTML Template', 'html-templates-lite' ),
+					'add_new_item'  => __( 'Add New Template', 'html-templates-lite' ),
+					'edit_item'     => __( 'Edit Template', 'html-templates-lite' ),
+					'all_items'     => __( 'All Templates', 'html-templates-lite' ),
+					'search_items'  => __( 'Search Templates', 'html-templates-lite' ),
+					'not_found'     => __( 'No templates found', 'html-templates-lite' ),
 				),
 				'public'          => false,
 				'show_ui'         => true,
 				'show_in_menu'    => true,
 				'menu_icon'       => 'dashicons-editor-code',
-				'supports'        => array( 'title' ),
+				// 'revisions' é obrigatório pro argumento revisions_enabled de
+				// register_post_meta() (WP 6.4) funcionar: sem esse suporte,
+				// wp_save_post_revision() retorna cedo e nenhuma revisão é
+				// criada — nem do post, nem do meta de HTML/CSS.
+				'supports'        => array( 'title', 'revisions' ),
 				'has_archive'     => false,
 				'rewrite'         => false,
 				'show_in_rest'    => false,
