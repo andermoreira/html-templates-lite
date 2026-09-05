@@ -1,0 +1,12 @@
+# Arquivos de desenvolvimento — fora do .zip de distribuição do plugin
+# (usar com: wp dist-archive . html-templates-lite.zip --format=zip)
+.git
+.github
+composer.json
+composer.lock
+vendor
+node_modules
+test-kit
+README.md
+.DS_Store
+*.po
