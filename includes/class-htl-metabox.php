@@ -243,12 +243,14 @@ class HTL_Metabox {
 			>
 				<?php esc_html_e( 'Preview template', 'html-templates-lite' ); ?>
 			</a>
-			<a
-				href="<?php echo esc_url( wp_nonce_url( admin_url( 'admin-post.php?action=htl_duplicate_template&template_id=' . $post->ID ), 'htl_duplicate_' . $post->ID ) ); ?>"
-				class="button"
-			>
-				<?php esc_html_e( 'Save as copy', 'html-templates-lite' ); ?>
-			</a>
+			<!-- Ação mutante via POST com nonce: como link GET, prefetchers
+			     e scanners disparavam duplicações indesejadas. -->
+			<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" style="display:inline;">
+				<input type="hidden" name="action" value="htl_duplicate_template">
+				<input type="hidden" name="template_id" value="<?php echo esc_attr( $post->ID ); ?>">
+				<?php wp_nonce_field( 'htl_duplicate_' . $post->ID ); ?>
+				<button type="submit" class="button"><?php esc_html_e( 'Save as copy', 'html-templates-lite' ); ?></button>
+			</form>
 			<br />
 			<span class="description">
 				<?php esc_html_e( 'The preview shows the last SAVED version — unsaved changes in the editor below do not appear in it.', 'html-templates-lite' ); ?>
@@ -474,7 +476,7 @@ class HTL_Metabox {
 	 * um template parecido em vez de começar do zero.
 	 */
 	public function handle_duplicate() {
-		$template_id = isset( $_GET['template_id'] ) ? absint( $_GET['template_id'] ) : 0;
+		$template_id = isset( $_REQUEST['template_id'] ) ? absint( $_REQUEST['template_id'] ) : 0;
 
 		check_admin_referer( 'htl_duplicate_' . $template_id );
 

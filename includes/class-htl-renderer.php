@@ -239,7 +239,13 @@ class HTL_Renderer {
 		}
 
 		$context_id = isset( $_GET['htl_preview_context'] ) ? absint( $_GET['htl_preview_context'] ) : $template_id;
-		if ( ! get_post( $context_id ) ) {
+
+		// O post de contexto é renderizado por inteiro (título, conteúdo,
+		// meta): exige acesso de LEITURA a ele. Sem esse guard, um usuário
+		// com unfiltered_html mas sem read_private_posts (papel
+		// customizado) renderizaria rascunhos/privados de terceiros numa
+		// URL pública. Recai no próprio template se o acesso faltar.
+		if ( ! $context_id || ! current_user_can( 'read_post', $context_id ) ) {
 			$context_id = $template_id;
 		}
 
