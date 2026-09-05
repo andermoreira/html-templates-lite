@@ -40,6 +40,11 @@
 		return el ? el.value : '';
 	}
 
+	function checkboxIsChecked( id ) {
+		var el = document.getElementById( id );
+		return !!( el && el.checked );
+	}
+
 	/**
 	 * Monta o texto do bloco {{loop}} a partir dos campos do helper.
 	 * Os atributos usam a mesma sintaxe de um shortcode do WordPress
@@ -61,16 +66,20 @@
 		var category = categoryFieldIsVisible() ? fieldValue( 'htl-loop-category' ) : '';
 		var count = parseInt( fieldValue( 'htl-loop-count' ), 10 ) || 5;
 		var orderby = fieldValue( 'htl-loop-orderby' ) || 'date';
+		var paged = checkboxIsChecked( 'htl-loop-paged' );
 
 		var attrs = 'post_type="' + postType + '" count="' + count + '" orderby="' + orderby + '"';
 		if ( category ) {
 			attrs += ' category="' + category + '"';
 		}
+		if ( paged ) {
+			attrs += ' paged="true"';
+		}
 
 		// Dentro do {{loop}}, {{post_title}}/{{post_excerpt}}/{{permalink}}
 		// passam a se referir ao post daquela iteração — as mesmas tags
 		// usadas fora do loop, só que com significado diferente ali dentro.
-		return (
+		var block = (
 			'{{loop ' + attrs + '}}\n' +
 			'  <article>\n' +
 			'    <h2><a href="{{permalink}}">{{post_title}}</a></h2>\n' +
@@ -78,6 +87,10 @@
 			'  </article>\n' +
 			'{{/loop}}\n'
 		);
+
+		// Com paginação marcada, insere também a tag que imprime a
+		// navegação (links "página 2, 3...") logo abaixo da lista.
+		return paged ? block + '{{pagination}}\n' : block;
 	}
 
 	function insertLoopSnippet() {

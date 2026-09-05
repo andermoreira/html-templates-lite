@@ -47,19 +47,19 @@ class HTL_Admin_List {
 		);
 		?>
 		<div class="wrap">
-			<h1><?php esc_html_e( 'Templates HTML Lite', 'html-templates-lite' ); ?></h1>
-			<p><?php esc_html_e( 'Posts e páginas abaixo estão usando um template HTML/CSS customizado em vez do tema.', 'html-templates-lite' ); ?></p>
+			<h1><?php esc_html_e( 'HTML Templates Lite', 'html-templates-lite' ); ?></h1>
+			<p><?php esc_html_e( 'The posts and pages below are using a custom HTML/CSS template instead of the theme.', 'html-templates-lite' ); ?></p>
 
 			<?php if ( empty( $posts ) ) : ?>
-				<p><?php esc_html_e( 'Nenhuma página está usando um template ainda.', 'html-templates-lite' ); ?></p>
+				<p><?php esc_html_e( 'No page is using a template yet.', 'html-templates-lite' ); ?></p>
 			<?php else : ?>
 				<table class="widefat striped">
 					<thead>
 						<tr>
-							<th><?php esc_html_e( 'Título', 'html-templates-lite' ); ?></th>
-							<th><?php esc_html_e( 'Tipo', 'html-templates-lite' ); ?></th>
-							<th><?php esc_html_e( 'Template usado', 'html-templates-lite' ); ?></th>
-							<th><?php esc_html_e( 'Ações', 'html-templates-lite' ); ?></th>
+							<th><?php esc_html_e( 'Title', 'html-templates-lite' ); ?></th>
+							<th><?php esc_html_e( 'Type', 'html-templates-lite' ); ?></th>
+							<th><?php esc_html_e( 'Template in use', 'html-templates-lite' ); ?></th>
+							<th><?php esc_html_e( 'Actions', 'html-templates-lite' ); ?></th>
 						</tr>
 					</thead>
 					<tbody>
@@ -70,22 +70,28 @@ class HTL_Admin_List {
 							<tr>
 								<td><?php echo esc_html( get_the_title( $post ) ); ?></td>
 								<td><?php echo esc_html( $post->post_type ); ?></td>
-								<td>
-									<?php if ( $template_id ) : ?>
+							<td>
+								<?php if ( $template_id ) : ?>
+									<?php if ( current_user_can( 'edit_post', $template_id ) ) : ?>
 										<a href="<?php echo esc_url( (string) get_edit_post_link( $template_id ) ); ?>">
 											<?php echo esc_html( get_the_title( $template_id ) ); ?>
 										</a>
+									<?php else : ?>
+										<?php echo esc_html( get_the_title( $template_id ) ); ?>
 									<?php endif; ?>
-								</td>
-								<td>
+								<?php endif; ?>
+							</td>
+							<td>
+								<?php if ( current_user_can( 'edit_post', $post->ID ) ) : ?>
 									<a href="<?php echo esc_url( (string) get_edit_post_link( $post->ID ) ); ?>">
-										<?php esc_html_e( 'Editar', 'html-templates-lite' ); ?>
+										<?php esc_html_e( 'Edit', 'html-templates-lite' ); ?>
 									</a>
 									|
-									<a href="<?php echo esc_url( (string) get_permalink( $post->ID ) ); ?>" target="_blank" rel="noopener noreferrer">
-										<?php esc_html_e( 'Ver', 'html-templates-lite' ); ?>
-									</a>
-								</td>
+								<?php endif; ?>
+								<a href="<?php echo esc_url( (string) get_permalink( $post->ID ) ); ?>" target="_blank" rel="noopener noreferrer">
+									<?php esc_html_e( 'View', 'html-templates-lite' ); ?>
+								</a>
+							</td>
 							</tr>
 						<?php endforeach; ?>
 					</tbody>
@@ -94,10 +100,10 @@ class HTL_Admin_List {
 
 			<p>
 				<a href="<?php echo esc_url( admin_url( 'edit.php?post_type=' . HTL_Post_Type::SLUG ) ); ?>" class="button">
-					<?php esc_html_e( 'Gerenciar templates', 'html-templates-lite' ); ?>
+					<?php esc_html_e( 'Manage templates', 'html-templates-lite' ); ?>
 				</a>
 				<a href="<?php echo esc_url( admin_url( 'edit.php?post_type=' . HTL_Post_Type::SLUG . '&page=htl-archive-settings' ) ); ?>" class="button">
-					<?php esc_html_e( 'Ajustes de home e arquivos', 'html-templates-lite' ); ?>
+					<?php esc_html_e( 'Home and archive settings', 'html-templates-lite' ); ?>
 				</a>
 			</p>
 		</div>
