@@ -1,7 +1,67 @@
 /* Ajustes mínimos — o resto do visual vem do próprio wp-admin e do CodeMirror nativo. */
 
-#htl_template_metabox .CodeMirror {
+#htl_template_editor .htl-editor {
+	margin: 0 0 12px;
+}
+
+#htl_template_editor .htl-editor label {
+	display: inline-block;
+	margin-bottom: 4px;
+}
+
+#htl_template_editor .htl-editor textarea {
+	width: 100%;
+	font-family: monospace;
+}
+
+#htl_template_editor .htl-editor--html .CodeMirror {
 	border: 1px solid #dcdcde;
 	height: auto;
-	min-height: 200px;
+	min-height: 360px;
+}
+
+#htl_template_editor .htl-editor--css .CodeMirror {
+	border: 1px solid #dcdcde;
+	height: auto;
+	min-height: 220px;
+}
+
+#htl_template_editor .htl-loop-helper,
+#htl_template_editor .htl-tag-reference {
+	margin: 12px 0 0;
+}
+
+#htl_template_editor .htl-loop-helper summary,
+#htl_template_editor .htl-tag-reference summary {
+	cursor: pointer;
+	font-weight: 600;
+}
+
+#htl_template_editor .htl-loop-helper fieldset {
+	background: #f6f7f7;
+	border: 1px solid #dcdcde;
+	margin: 8px 0 0;
+	min-width: 0;
+	padding: 12px;
+}
+
+#htl_template_editor .htl-loop-helper fieldset > p:last-child {
+	margin-bottom: 0;
+}
+
+#htl_template_editor .htl-loop-helper__fields {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(140px, max-content));
+	gap: 12px 16px;
+	align-items: end;
+	margin: 0 0 12px;
+}
+
+#htl_template_editor .htl-loop-helper__count {
+	width: 70px;
+}
+
+#htl_template_editor .htl-tag-reference .description {
+	margin: 8px 0 0;
+	padding-left: 1.25em;
 }

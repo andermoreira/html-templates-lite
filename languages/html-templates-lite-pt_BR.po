@@ -128,8 +128,8 @@ msgid "Insert post list (no code needed)"
 msgstr "Inserir lista de posts (sem escrever código)"
 
 #: includes/class-htl-metabox.php
-msgid "Builds a ready {{loop}}...{{/loop}} block and inserts it into the HTML below, at the cursor position."
-msgstr "Monta um bloco {{loop}}...{{/loop}} pronto e insere no HTML abaixo, na posição onde o cursor estiver."
+msgid "Builds a ready {{loop}}...{{/loop}} block and inserts it into the HTML at the cursor position."
+msgstr "Monta um bloco {{loop}}...{{/loop}} pronto e insere no HTML, na posição onde o cursor estiver."
 
 #: includes/class-htl-metabox.php includes/class-htl-settings.php
 msgid "Content type"
@@ -172,6 +172,10 @@ msgid "Your user does not have the \"unfiltered_html\" capability — saved HTML
 msgstr "Seu usuário não tem a permissão \"unfiltered_html\" — o HTML salvo será filtrado por segurança (tags e atributos potencialmente perigosos são removidos automaticamente)."
 
 #: includes/class-htl-metabox.php
+msgid "Template tags"
+msgstr "Tags do template"
+
+#: includes/class-htl-metabox.php
 msgid "Content tags: %s"
 msgstr "Tags de conteúdo: %s"
 
@@ -186,10 +190,6 @@ msgstr "Inclua outro template dentro deste com %s, usando o slug (nome amigável
 #: includes/class-htl-metabox.php
 msgid "In archive/home/search templates: %s — pagination follows the main WordPress query (Settings → Reading)."
 msgstr "Em templates de arquivo/home/busca: %s — a paginação usa a consulta principal do WordPress (Ajustes → Leitura)."
-
-#: includes/class-htl-metabox.php
-msgid "Prefer not to write the loop syntax by hand? Use the form above, \"Insert post list\" — it builds the {{loop}}...{{/loop}} block for you."
-msgstr "Prefere não escrever a sintaxe do loop na mão? Use o formulário acima, em \"Inserir lista de posts\" — ele monta o bloco {{loop}}...{{/loop}} pra você."
 
 #: includes/class-htl-metabox.php
 msgid "Invalid template."
