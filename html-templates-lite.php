@@ -3,7 +3,7 @@
  * Plugin Name:       HTML Templates Lite
  * Plugin URI:        https://github.com/anderson-idea/html-templates-lite
  * Description:       Crie templates HTML/CSS reusáveis e aplique em qualquer post, página ou custom post type, ignorando completamente o tema ativo para essa URL. Não depende de nenhum outro plugin nem de um tema específico.
- * Version:           0.5.0
+ * Version:           0.6.1
  * Requires at least: 6.4
  * Requires PHP:      7.4
  * Author:            Anderson Moreira Alves
@@ -34,7 +34,7 @@
 
 defined( 'ABSPATH' ) || exit; // Bloqueia acesso direto ao arquivo via URL.
 
-define( 'HTL_VERSION', '0.5.0' );
+define( 'HTL_VERSION', '0.6.1' );
 define( 'HTL_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'HTL_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 
@@ -50,6 +50,11 @@ require_once HTL_PLUGIN_DIR . 'includes/class-htl-settings.php';
  * core que só existem depois desse ponto.
  */
 function htl_bootstrap() {
+	// Traduções locais (languages/), mesmo domínio do cabeçalho acima.
+	// Publicado no wp.org, os language packs do GlotPress carregam por
+	// conta própria; esta chamada cobre o uso local do .mo incluído.
+	load_plugin_textdomain( 'html-templates-lite', false, dirname( plugin_basename( __FILE__ ) ) . '/languages' );
+
 	new HTL_Post_Type();
 	new HTL_Metabox();
 	new HTL_Renderer();

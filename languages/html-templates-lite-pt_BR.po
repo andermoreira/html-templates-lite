@@ -1,0 +1,362 @@
+# HTML Templates Lite — Brazilian Portuguese translation.
+# Copyright (C) 2026 Anderson Moreira Alves
+# This file is distributed under the GPL-2.0-or-later license.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: HTML Templates Lite 0.6.1\n"
+"Report-Msgid-Bugs-To: https://github.com/anderson-idea/html-templates-lite/issues\n"
+"POT-Creation-Date: 2026-09-05 00:00-0300\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"PO-Revision-Date: 2026-09-05 00:00-0300\n"
+"Last-Translator: Anderson Moreira Alves <andermoreira@users.noreply.github.com>\n"
+"Language-Team: pt_BR <LL@li.org>\n"
+"Language: pt_BR\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"X-Generator: manual\n"
+
+#. Plugin Name of the plugin
+msgid "HTML Templates Lite"
+msgstr "HTML Templates Lite"
+
+#. Plugin URI of the plugin
+msgid "https://github.com/anderson-idea/html-templates-lite"
+msgstr "https://github.com/anderson-idea/html-templates-lite"
+
+#. Description of the plugin
+msgid ""
+"Create reusable HTML/CSS templates and apply them to any post, page or "
+"custom post type, completely bypassing the active theme for that URL. Does "
+"not depend on any other plugin or a specific theme."
+msgstr ""
+"Crie templates HTML/CSS reusáveis e aplique em qualquer post, página ou "
+"custom post type, ignorando completamente o tema ativo para essa URL. Não "
+"depende de nenhum outro plugin nem de um tema específico."
+
+#. Author of the plugin
+msgid "Anderson Moreira Alves"
+msgstr "Anderson Moreira Alves"
+
+#: includes/class-htl-admin-list.php
+msgid "The posts and pages below are using a custom HTML/CSS template instead of the theme."
+msgstr "Os posts e páginas abaixo estão usando um template HTML/CSS customizado em vez do tema."
+
+#: includes/class-htl-admin-list.php
+msgid "No page is using a template yet."
+msgstr "Nenhuma página está usando um template ainda."
+
+#: includes/class-htl-admin-list.php
+msgid "Title"
+msgstr "Título"
+
+#: includes/class-htl-admin-list.php
+msgid "Type"
+msgstr "Tipo"
+
+#: includes/class-htl-admin-list.php
+msgid "Template in use"
+msgstr "Template usado"
+
+#: includes/class-htl-admin-list.php
+msgid "Actions"
+msgstr "Ações"
+
+#: includes/class-htl-admin-list.php
+msgid "Edit"
+msgstr "Editar"
+
+#: includes/class-htl-admin-list.php
+msgid "View"
+msgstr "Ver"
+
+#: includes/class-htl-admin-list.php
+msgid "Manage templates"
+msgstr "Gerenciar templates"
+
+#: includes/class-htl-admin-list.php
+msgid "Home and archive settings"
+msgstr "Ajustes de home e arquivos"
+
+#: includes/class-htl-metabox.php
+msgid "HTML Template/CSS (HTML Templates Lite)"
+msgstr "Template HTML/CSS (HTML Templates Lite)"
+
+#: includes/class-htl-metabox.php
+msgid "Template content (HTML Templates Lite)"
+msgstr "Conteúdo do template (HTML Templates Lite)"
+
+#: includes/class-htl-metabox.php
+msgid "Template to use instead of the theme"
+msgstr "Template a usar no lugar do tema"
+
+#: includes/class-htl-metabox.php
+msgid "— None (use the theme normally) —"
+msgstr "— Nenhum (usar o tema normalmente) —"
+
+#: includes/class-htl-metabox.php includes/class-htl-settings.php
+msgid "No templates published yet. <a href=\"%s\">Create a template</a> first."
+msgstr "Nenhum template publicado ainda. <a href=\"%s\">Crie um template</a> primeiro."
+
+#: includes/class-htl-metabox.php
+msgid "The same template can be applied to multiple posts/pages — edit its content under HTML Templates → All Templates."
+msgstr "O mesmo template pode ser escolhido em vários posts/páginas — edite o conteúdo em HTML Templates → All Templates."
+
+#: includes/class-htl-metabox.php
+msgid "Leaving it as \"None\" applies the global rules from HTML Templates → Settings, if any."
+msgstr "Deixando em \"Nenhum\", valem as regras globais de Templates HTML → Ajustes, se houver."
+
+#: includes/class-htl-metabox.php
+msgid "Preview template"
+msgstr "Pré-visualizar template"
+
+#: includes/class-htl-metabox.php
+msgid "Save as copy"
+msgstr "Salvar como cópia"
+
+#: includes/class-htl-metabox.php
+msgid "The preview shows the last SAVED version — unsaved changes in the editor below do not appear in it."
+msgstr "A pré-visualização mostra a última versão SALVA — mudanças ainda não salvas no editor abaixo não aparecem nela."
+
+#: includes/class-htl-metabox.php
+msgid "Asset folder for this template (upload css/js/fonts via FTP and reference them with %s in the HTML): %s"
+msgstr "Pasta de assets deste template (envie css/js/fonts por FTP e referencie com %s no HTML): %s"
+
+#: includes/class-htl-metabox.php
+msgid "Insert post list (no code needed)"
+msgstr "Inserir lista de posts (sem escrever código)"
+
+#: includes/class-htl-metabox.php
+msgid "Builds a ready {{loop}}...{{/loop}} block and inserts it into the HTML below, at the cursor position."
+msgstr "Monta um bloco {{loop}}...{{/loop}} pronto e insere no HTML abaixo, na posição onde o cursor estiver."
+
+#: includes/class-htl-metabox.php includes/class-htl-settings.php
+msgid "Content type"
+msgstr "Tipo de conteúdo"
+
+#: includes/class-htl-metabox.php includes/class-htl-settings.php
+msgid "Category (optional)"
+msgstr "Categoria (opcional)"
+
+#: includes/class-htl-metabox.php includes/class-htl-settings.php
+msgid "— All —"
+msgstr "— Todas —"
+
+#: includes/class-htl-metabox.php
+msgid "Count"
+msgstr "Quantidade"
+
+#: includes/class-htl-metabox.php
+msgid "Order by"
+msgstr "Ordenar por"
+
+#: includes/class-htl-metabox.php
+msgid "Date (newest first)"
+msgstr "Data (mais recente)"
+
+#: includes/class-htl-metabox.php
+msgid "Random"
+msgstr "Aleatório"
+
+#: includes/class-htl-metabox.php
+msgid "Pagination (archive templates)"
+msgstr "Paginação (templates de arquivo)"
+
+#: includes/class-htl-metabox.php
+msgid "Insert post block into the HTML"
+msgstr "Inserir bloco de posts no HTML"
+
+#: includes/class-htl-metabox.php
+msgid "Your user does not have the \"unfiltered_html\" capability — saved HTML will be filtered for security (potentially dangerous tags and attributes are removed automatically)."
+msgstr "Seu usuário não tem a permissão \"unfiltered_html\" — o HTML salvo será filtrado por segurança (tags e atributos potencialmente perigosos são removidos automaticamente)."
+
+#: includes/class-htl-metabox.php
+msgid "Content tags: %s"
+msgstr "Tags de conteúdo: %s"
+
+#: includes/class-htl-metabox.php
+msgid "Fields and interaction: %s"
+msgstr "Campos e interação: %s"
+
+#: includes/class-htl-metabox.php
+msgid "Include another template inside this one with %s, using the slug (URL-friendly name) of the included template."
+msgstr "Inclua outro template dentro deste com %s, usando o slug (nome amigável na URL) do template incluído."
+
+#: includes/class-htl-metabox.php
+msgid "In archive/home/search templates: %s — pagination follows the main WordPress query (Settings → Reading)."
+msgstr "Em templates de arquivo/home/busca: %s — a paginação usa a consulta principal do WordPress (Ajustes → Leitura)."
+
+#: includes/class-htl-metabox.php
+msgid "Prefer not to write the loop syntax by hand? Use the form above, \"Insert post list\" — it builds the {{loop}}...{{/loop}} block for you."
+msgstr "Prefere não escrever a sintaxe do loop na mão? Use o formulário acima, em \"Inserir lista de posts\" — ele monta o bloco {{loop}}...{{/loop}} pra você."
+
+#: includes/class-htl-metabox.php
+msgid "Invalid template."
+msgstr "Template inválido."
+
+#: includes/class-htl-metabox.php
+msgid "You are not allowed to duplicate this template."
+msgstr "Você não tem permissão para duplicar este template."
+
+#: includes/class-htl-metabox.php
+msgid "%s (copy)"
+msgstr "%s (cópia)"
+
+#: includes/class-htl-post-type.php
+msgctxt "post type general name"
+msgid "HTML Templates"
+msgstr "Templates HTML"
+
+#: includes/class-htl-post-type.php
+msgctxt "post type singular name"
+msgid "HTML Template"
+msgstr "Template HTML"
+
+#: includes/class-htl-post-type.php
+msgid "Add New Template"
+msgstr "Adicionar novo template"
+
+#: includes/class-htl-post-type.php
+msgid "Edit Template"
+msgstr "Editar template"
+
+#: includes/class-htl-post-type.php
+msgid "All Templates"
+msgstr "Todos os templates"
+
+#: includes/class-htl-post-type.php
+msgid "Search Templates"
+msgstr "Buscar templates"
+
+#: includes/class-htl-post-type.php
+msgid "No templates found"
+msgstr "Nenhum template encontrado"
+
+#: includes/class-htl-renderer.php
+msgid "<!-- htl: inclusion loop detected in \"%s\" -->"
+msgstr "<!-- htl: loop de inclusão detectado em \"%s\" -->"
+
+#: includes/class-htl-renderer.php
+msgid "<!-- htl: template \"%s\" not found or not published -->"
+msgstr "<!-- htl: template \"%s\" não encontrado ou não publicado -->"
+
+#: includes/class-htl-renderer.php
+msgid "<!-- htl: templates cannot be listed in a {{loop}} -->"
+msgstr "<!-- htl: templates não podem ser listados em {{loop}} -->"
+
+#: includes/class-htl-renderer.php
+msgid "<!-- htl: no posts found for this loop (%s) -->"
+msgstr "<!-- htl: nenhum post encontrado para este loop (%s) -->"
+
+#: includes/class-htl-renderer.php
+msgid "&laquo; Previous"
+msgstr "&laquo; Anterior"
+
+#: includes/class-htl-renderer.php
+msgid "Next &raquo;"
+msgstr "Próxima &raquo;"
+
+#: includes/class-htl-renderer.php
+msgid "Posts pagination"
+msgstr "Paginação de posts"
+
+#: includes/class-htl-renderer.php
+msgid "<!-- htl: missing menu location, e.g. {{menu location=\"primary\"}} -->"
+msgstr "<!-- htl: informe a location, ex. {{menu location=\"primary\"}} -->"
+
+#: includes/class-htl-renderer.php
+msgid "<!-- htl: menu \"%s\" has no menu assigned (Appearance → Menus) -->"
+msgstr "<!-- htl: menu \"%s\" sem menu atribuído (Aparência → Menus) -->"
+
+#: includes/class-htl-renderer.php
+msgid "<!-- htl: protected meta keys (prefixed with _) are not exposed -->"
+msgstr "<!-- htl: campos protegidos (prefixados com _) não são expostos -->"
+
+#: includes/class-htl-settings.php
+msgid "Settings — Home and archives"
+msgstr "Ajustes — Home e arquivos"
+
+#: includes/class-htl-settings.php
+msgid "Settings"
+msgstr "Ajustes"
+
+#: includes/class-htl-settings.php
+msgid "Homepage / blog posts listing"
+msgstr "Página inicial / lista de posts do blog"
+
+#: includes/class-htl-settings.php
+msgid "Category archive (any category)"
+msgstr "Arquivo de categoria (qualquer categoria)"
+
+#: includes/class-htl-settings.php
+msgid "Tag archive (any tag)"
+msgstr "Arquivo de tag (qualquer tag)"
+
+#: includes/class-htl-settings.php
+msgid "Author archive"
+msgstr "Arquivo de autor"
+
+#: includes/class-htl-settings.php
+msgid "Date archive"
+msgstr "Arquivo de data"
+
+#: includes/class-htl-settings.php
+msgid "Search results"
+msgstr "Resultados de busca"
+
+#: includes/class-htl-settings.php
+msgid "404 page (not found)"
+msgstr "Página 404 (não encontrada)"
+
+#: includes/class-htl-settings.php
+msgid "— Choose —"
+msgstr "— Escolha —"
+
+#: includes/class-htl-settings.php
+msgid "— None —"
+msgstr "— Nenhum —"
+
+#: includes/class-htl-settings.php
+msgid "Remove rule"
+msgstr "Remover regra"
+
+#: includes/class-htl-settings.php
+msgid "Remove"
+msgstr "Remover"
+
+#: includes/class-htl-settings.php
+msgid "HTML Templates Lite — Home and archives"
+msgstr "HTML Templates Lite — Home e arquivos"
+
+#: includes/class-htl-settings.php
+msgid "Choose a template for each situation below. Leave it as \"None\" to keep the normal theme in that case."
+msgstr "Escolha um template pra cada situação abaixo. Deixe em \"Nenhum\" pra manter o tema normal nesse caso."
+
+#: includes/class-htl-settings.php
+msgid "If the homepage is a static Page (Settings → Reading), set its template directly on that Page, in the usual box — the \"Homepage\" setting here only applies when the home shows the latest posts."
+msgstr "Se a página inicial do site for uma Página estática (Ajustes → Leitura), configure o template dela direto naquela Página, na caixa de sempre — o ajuste de \"Página inicial\" aqui só vale quando a home mostra os posts mais recentes."
+
+#: includes/class-htl-settings.php
+msgid "— None (use the theme) —"
+msgstr "— Nenhum (usar o tema) —"
+
+#: includes/class-htl-settings.php
+msgid "Posts and pages by rule"
+msgstr "Posts e páginas por regra"
+
+#: includes/class-htl-settings.php
+msgid "Applies a template to all posts of the chosen type (or of one category) without editing page by page. The manual choice in each post's metabox wins over the rule; if no rule matches, the theme is used."
+msgstr "Aplica um template a todos os posts do tipo escolhido (ou só de uma categoria), sem editar página por página. A escolha manual na metabox de cada post vence a regra; sem regra que case, vale o tema."
+
+#: includes/class-htl-settings.php
+msgid "Template"
+msgstr "Template"
+
+#: includes/class-htl-settings.php
+msgid "Add rule"
+msgstr "Adicionar regra"
+
+#: includes/class-htl-settings.php
+msgid "Tip: inside the template, use {{loop post_type=\"post\" count=\"10\" paged=\"true\"}}...{{/loop}} to list posts — in category/tag/author/search archives, the loop automatically filters by the current item, no need to specify it. The {{pagination}} tag prints the page navigation."
+msgstr "Dica: dentro do template, use {{loop post_type=\"post\" count=\"10\" paged=\"true\"}}...{{/loop}} pra listar os posts — em arquivos de categoria/tag/autor/busca, o loop já filtra sozinho pelo item atual, sem precisar informar qual categoria/tag/autor é. A tag {{pagination}} imprime a navegação entre páginas."
