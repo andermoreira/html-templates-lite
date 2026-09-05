@@ -1,12 +1,12 @@
 {
-	"name": "anderson-idea/html-templates-lite",
+	"name": "andermoreira/html-templates-lite",
 	"description": "Reusable HTML/CSS templates applied to any post, page or CPT, bypassing the active theme for those URLs.",
 	"type": "wordpress-plugin",
 	"license": "GPL-2.0-or-later",
 	"authors": [
 		{
 			"name": "Anderson Moreira Alves",
-			"homepage": "https://github.com/anderson-idea"
+			"homepage": "https://github.com/andermoreira"
 		}
 	],
 	"require-dev": {

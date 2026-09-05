@@ -1,7 +1,7 @@
 <?php
 /**
  * Plugin Name:       HTML Templates Lite
- * Plugin URI:        https://github.com/anderson-idea/html-templates-lite
+ * Plugin URI:        https://github.com/andermoreira/html-templates-lite
  * Description:       Crie templates HTML/CSS reusáveis e aplique em qualquer post, página ou custom post type, ignorando completamente o tema ativo para essa URL. Não depende de nenhum outro plugin nem de um tema específico.
  * Version:           0.6.2
  * Requires at least: 6.4

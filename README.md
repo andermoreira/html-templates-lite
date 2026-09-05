@@ -183,7 +183,7 @@ O plugin imprime o HTML e o CSS do template sem `esc_html`/`wp_kses` na exibiç�
 
 | Recurso | Link |
 |---|---|
-| Repositório | [GitHub](https://github.com/anderson-idea/html-templates-lite) |
+| Repositório | [GitHub](https://github.com/andermoreira/html-templates-lite) |
 | Changelog completo | [readme.txt](./readme.txt) |
 
 ## Licença
