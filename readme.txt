@@ -4,7 +4,7 @@ Tags: template, html, css, no-theme, lightweight
 Requires at least: 6.4
 Tested up to: 6.8
 Requires PHP: 7.4
-Stable tag: 0.6.1
+Stable tag: 0.6.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -27,7 +27,7 @@ A maioria dos construtores visuais (Elementor, Divi, Bricks, Oxygen) resolve "fu
 * Paginação nativa em templates de arquivo: com `paged="true"` no `{{loop}}` e a tag `{{pagination}}`, a navegação entre páginas funciona (na /page/2/ o loop lista os próximos posts em vez de repetir os primeiros).
 * `{{assets_url}}` aponta pra pasta de assets do template (`uploads/htl-templates/{slug}/`, criada no salvamento) — envie os arquivos do template pronto (css/js/fonts/imagens) por FTP e referencie com caminhos relativos à tag. Um template incluído com `{{include}}` usa a própria pasta dele.
 * `{{menu location="primary"}}` imprime o menu do WordPress (o `<ul>` com as classes nativas, sem wrapper) na marcação do template.
-* Tags extras: `{{post_date}}`, `{{post_author}}`, `{{post_categories}}`, `{{post_tags}}`, `{{meta:chave}}` (campos personalizados/ACF), `{{comment_form}}` e `{{comments_list}}`.
+* Tags extras: `{{post_date}}`, `{{post_author}}`, `{{post_categories}}`, `{{post_tags}}`, `{{meta:chave}}` (campos personalizados/ACF — saída sempre escapada; `{{meta_url:chave}}` pra URLs), `{{comment_form}}` e `{{comments_list}}`.
 * Regras de exibição em Ajustes: aplique um template a todos os posts de um tipo (ou de uma categoria) de uma vez — a escolha manual na metabox de cada post continua vencendo.
 * O HTML do template processa shortcodes — plugins de formulário (Contact Form 7, Gravity Forms) entram colando o shortcode direto no template.
 * Botão "Pré-visualizar template" na tela de edição — mostra como o template fica sem precisar salvar numa página de verdade primeiro.
@@ -128,10 +128,18 @@ Em Templates HTML → Ajustes, seção "Posts e páginas por regra": escolha o t
 * A tag `{{pagination}}` reflete a consulta principal do WordPress: o número de páginas segue Ajustes → Leitura ("No máximo X posts por página"). Alinhe o `count` do loop com esse valor pra lista e a navegação coincidirem.
 * `paged="true"` só faz sentido quando o loop lista o mesmo conteúdo do contexto atual (template de arquivo). Num loop com filtros próprios (ex.: `category="destaques"` numa página de categoria), a paginação da URL não corresponde ao que ele exibe.
 * Cada `{{loop}}` tem teto de 50 posts por página (proteção de servidor). Alguns atributos de consulta avançados (taxonomias customizadas, ano/mês) ficam disponíveis só via o filtro `htl_loop_query_args`.
-* `{{meta:chave}}` não expõe campos protegidos (prefixados com `_`) nem valores complexos (arrays) — é uma página pública; use o filtro `htl_template_tags` pra casos especiais.
+* `{{meta:chave}}` não expõe campos protegidos (`is_protected_meta`, incluindo todo prefixo `_`) nem valores complexos (arrays), e a saída é sempre escapada (`esc_html`; `esc_url` na variante `{{meta_url:chave}}`). Meta de post protegido por senha nunca sai — nem dentro de `{{loop}}`. A resolução roda só no HTML autoriado do template: um post cujo conteúdo contenha o literal `{{meta:x}}` não injeta resolução.
 * Assets do template são enviados por FTP/gerenciador de arquivos — o plugin não faz upload, pra não criar superfície de ataque.
 
 == Changelog ==
+
+= 0.6.2 =
+* Segurança (auditoria): `{{meta:chave}}` agora sai sempre escapada (`esc_html`) — post meta não passa por kses no save do core, e o valor de um campo escrito por autor sem `unfiltered_html` podia virar XSS armazenado na página do template.
+* Segurança (auditoria): a resolução de meta roda só sobre o HTML autoriado do template, fora dos corpos de `{{loop}}` — antes, um post cujo conteúdo contivesse o literal `{{meta:x}}` disparava a resolução na passada externa (XSS de segunda ordem, sem cooperação do admin).
+* Nova tag `{{meta_url:chave}}` — `esc_url` pra uso em `href`/`src`, neutralizando esquemas como `javascript:`.
+* Segurança (auditoria): campos protegidos via `is_protected_meta` (antes: só prefixo `_`); meta de post protegido por senha não é exposta, nem dentro de `{{loop}}`.
+* Segurança (auditoria): o contexto de preview (`htl_preview_context`) exige `read_post` — papéis com `unfiltered_html` sem `read_private_posts` não renderizam mais rascunhos/privados de terceiros.
+* Segurança (auditoria): "Salvar como cópia" virou POST com nonce — como GET mutante, prefetchers podiam disparar duplicações.
 
 = 0.6.1 =
 * Interface traduzida para inglês (convenção do diretório de plugins do WordPress/GlotPress) — tradução pt-BR incluída em `languages/`.

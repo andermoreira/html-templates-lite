@@ -270,8 +270,12 @@ msgid "<!-- htl: menu \"%s\" has no menu assigned (Appearance → Menus) -->"
 msgstr "<!-- htl: menu \"%s\" sem menu atribuído (Aparência → Menus) -->"
 
 #: includes/class-htl-renderer.php
-msgid "<!-- htl: protected meta keys (prefixed with _) are not exposed -->"
-msgstr "<!-- htl: campos protegidos (prefixados com _) não são expostos -->"
+msgid "<!-- htl: protected meta keys are not exposed -->"
+msgstr "<!-- htl: campos protegidos não são expostos -->"
+
+#: includes/class-htl-renderer.php
+msgid "<!-- htl: meta of a password-protected post is not exposed -->"
+msgstr "<!-- htl: meta de post protegido por senha não é exposta -->"
 
 #: includes/class-htl-settings.php
 msgid "Settings — Home and archives"

@@ -52,7 +52,8 @@ O resto do site continua normal, com o tema de sempre. Se um template for exclu�
 | `{{post_tags}}` | Links das tags, separados por vírgula | Post |
 | `{{featured_image}}` | URL da imagem destacada (tamanho `full`) | Post |
 | `{{permalink}}` | Link permanente | Post |
-| `{{meta:chave}}` | Campo personalizado (ACF incluso; sem campos protegidos) | Post |
+| `{{meta:chave}}` | Campo personalizado, escapado (`esc_html`; sem campos protegidos) | Post |
+| `{{meta_url:chave}}` | Campo como URL segura (`esc_url`, neutraliza `javascript:`) | Post |
 | `{{comment_form}}` | Formulário de comentários nativo | Post |
 | `{{comments_list}}` | Comentários aprovados (marcação nativa) | Post |
 | `{{assets_url}}` | URL da pasta de assets do template | Sempre |
@@ -175,7 +176,7 @@ O plugin imprime o HTML e o CSS do template sem `esc_html`/`wp_kses` na exibiç�
 - A tag `{{pagination}}` reflete a consulta principal do WordPress; alinhe o `count` do loop com Ajustes → Leitura pra lista e a navegação coincidirem.
 - `paged="true"` só faz sentido quando o loop lista o mesmo conteúdo do contexto atual (template de arquivo); num loop com filtros próprios, a paginação da URL não corresponde ao que ele exibe.
 - Cada `{{loop}}` tem teto de 50 posts por página (proteção de servidor). Atributos de consulta avançados (taxonomias customizadas, ano/mês) ficam disponíveis via o filtro `htl_loop_query_args`.
-- `{{meta:chave}}` não expõe campos protegidos (prefixados com `_`) nem valores complexos (arrays) — use o filtro `htl_template_tags` para casos especiais.
+- `{{meta:chave}}` não expõe campos protegidos (`is_protected_meta`, incluindo todo prefixo `_`) nem valores complexos (arrays), e a saída é sempre escapada (`esc_html`; `esc_url` na variante `{{meta_url:chave}}`). Meta de post com senha nunca sai — nem dentro de `{{loop}}`. A resolução roda só no HTML autoriado do template: post content contendo o literal `{{meta:x}}` não injeta resolução.
 - Assets são enviados por FTP/gerenciador de arquivos — o plugin não faz upload, para não criar superfície de ataque. Se o slug do template mudar, a pasta muda junto (mova os arquivos).
 
 ## Links

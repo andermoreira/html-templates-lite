@@ -3,7 +3,7 @@
  * Plugin Name:       HTML Templates Lite
  * Plugin URI:        https://github.com/anderson-idea/html-templates-lite
  * Description:       Crie templates HTML/CSS reusáveis e aplique em qualquer post, página ou custom post type, ignorando completamente o tema ativo para essa URL. Não depende de nenhum outro plugin nem de um tema específico.
- * Version:           0.6.1
+ * Version:           0.6.2
  * Requires at least: 6.4
  * Requires PHP:      7.4
  * Author:            Anderson Moreira Alves
@@ -34,7 +34,7 @@
 
 defined( 'ABSPATH' ) || exit; // Bloqueia acesso direto ao arquivo via URL.
 
-define( 'HTL_VERSION', '0.6.1' );
+define( 'HTL_VERSION', '0.6.2' );
 define( 'HTL_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'HTL_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 

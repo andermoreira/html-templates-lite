@@ -344,7 +344,7 @@ class HTL_Metabox {
 			printf(
 				/* translators: %s: lista de tags de campos/interação, cada uma dentro de <code> */
 				esc_html__( 'Fields and interaction: %s', 'html-templates-lite' ),
-				'<code>{{meta:chave}}</code>, <code>{{assets_url}}</code>, <code>{{menu location="primary"}}</code>, <code>{{comment_form}}</code>, <code>{{comments_list}}</code>'
+				'<code>{{meta:chave}}</code>, <code>{{meta_url:chave}}</code>, <code>{{assets_url}}</code>, <code>{{menu location="primary"}}</code>, <code>{{comment_form}}</code>, <code>{{comments_list}}</code>'
 			);
 			?>
 			<br />
