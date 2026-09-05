@@ -26,7 +26,10 @@ foreach ( $meta_keys as $meta_key ) {
 $templates = get_posts(
 	array(
 		'post_type'      => 'htl_template',
-		'post_status'    => 'any',
+		// get_post_stati() inclui auto-draft e trash, que o valor 'any'
+		// deixa de fora (exclude_from_search) — sem isso sobrariam posts
+		// órfãos no banco após a desinstalação.
+		'post_status'    => get_post_stati(),
 		'posts_per_page' => -1,
 		'fields'         => 'ids',
 	)
@@ -38,3 +41,8 @@ foreach ( $templates as $template_id ) {
 
 // Remove a option com os templates escolhidos pra home/arquivos/busca/404.
 delete_option( 'htl_archive_templates' );
+
+// Remove a option com as regras de exibição (template por tipo de
+// conteúdo). As pastas de assets em uploads/htl-templates/ são
+// deliberadamente mantidas: são arquivos do usuário.
+delete_option( 'htl_singular_rules' );
