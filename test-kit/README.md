@@ -4,6 +4,29 @@ Um conjunto de 4 templates + assets reais para validar o plugin de ponta a ponta
 
 > **Atenção:** esta pasta é ferramenta de desenvolvimento. Não a inclua no .zip de distribuição do plugin — ela não faz parte do código.
 
+## Atalho (site de teste, ex.: Hostinger)
+
+Em vez de colar os 4 HTMLs e criar posts na mão, instale o carregador:
+
+1. Feche a tela **Adicionar novo template** se estiver vazia.
+2. Monte o zip (na pasta `test-kit/` deste repositório):
+
+```bash
+mkdir -p /tmp/htl-test-kit-loader
+cp htl-test-kit-loader.php /tmp/htl-test-kit-loader/
+cp -R templates uploads /tmp/htl-test-kit-loader/
+(cd /tmp && zip -r htl-test-kit-loader.zip htl-test-kit-loader)
+```
+
+3. No WordPress: **Plugins → Adicionar novo → Enviar plugin** → o `htl-test-kit-loader.zip`.
+4. Ative **HTML Templates Lite** (se ainda não estiver) e depois **HTML Templates Lite — Test Kit Loader**.
+5. **Ferramentas → HTL Test Kit → Carregar kit de teste**.
+6. Siga a [checklist da seção 5](#5-checklist-de-validação). Depois **apague** o plugin do carregador.
+
+O carregador registra a location de menu `primary` enquanto estiver ativo (temas de bloco como Twenty Twenty-Five não têm essa location). Pode rodar de novo: atualiza slugs já existentes.
+
+Não coloque tags `{{...}}` dentro de comentários HTML dos templates: o plugin resolve include/tags também ali. Um `{{include:kit-header}}` no comentário do próprio header vira loop, injeta outro comentário e o resto do bloco vaza na página.
+
 ```
 test-kit/
 ├── README.md                      ← este arquivo
