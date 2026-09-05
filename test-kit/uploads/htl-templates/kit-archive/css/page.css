@@ -1,0 +1,32 @@
+/*
+ * Kit de teste — CSS ESPECÍFICO do template kit-archive (arquivo/busca).
+ * Fica na pasta do PRÓPRIO kit-archive (uploads/htl-templates/kit-archive/).
+ * Marca visual: cabeçalho do arquivo com fundo azul-claro.
+ */
+.kit-archive-head {
+	background: #f0f6fc;
+	border-left: 6px solid #2271b1;
+	padding: 1rem 1.25rem;
+	margin-bottom: 1.5rem;
+}
+.kit-archive-head h1 { margin: 0 0 0.25rem; }
+
+.kit-search {
+	display: flex;
+	gap: 0.5rem;
+	margin: 2rem 0;
+}
+.kit-search input {
+	flex: 1;
+	padding: 0.5rem 0.75rem;
+	border: 1px solid #dcdcde;
+	border-radius: 4px;
+}
+.kit-search button {
+	padding: 0.5rem 1rem;
+	border: none;
+	border-radius: 4px;
+	background: #2271b1;
+	color: #fff;
+	cursor: pointer;
+}

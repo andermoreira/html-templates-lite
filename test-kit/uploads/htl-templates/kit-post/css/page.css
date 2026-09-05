@@ -1,0 +1,26 @@
+/*
+ * Kit de teste — CSS ESPECÍFICO do template kit-post (singular).
+ * Fica na PASTA DO PROPRIO kit-post (uploads/htl-templates/kit-post/),
+ * diferente da pasta do kit-header — é o que valida que cada template
+ * resolve a sua própria {{assets_url}}.
+ * Marca visual: título com barra laranja à esquerda.
+ */
+.kit-post h1 {
+	border-left: 6px solid #e05c3e;
+	padding-left: 0.75rem;
+}
+
+.kit-featured {
+	max-width: 100%;
+	height: auto;
+	border-radius: 6px;
+	margin: 1rem 0;
+}
+
+.kit-meta-box {
+	background: #fcf0e7;
+	border: 1px solid #e05c3e;
+	border-radius: 6px;
+	padding: 0.75rem 1rem;
+	margin: 1.5rem 0;
+}

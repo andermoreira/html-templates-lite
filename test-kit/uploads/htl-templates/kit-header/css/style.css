@@ -1,0 +1,97 @@
+/**
+ * Kit de teste — CSS GLOBAL (carregado pelo {{include:kit-header}},
+ * presente em todas as páginas que usam os templates do kit).
+ *
+ * Se este arquivo estiver sendo aplicado, o fundo do header fica ESCURO.
+ * Se a página está "crua", o assets_url não está resolvendo (pasta não
+ * existe, arquivos não subidos, ou slug diferente de "kit-header").
+ */
+:root {
+	--kit-ink: #1d2327;
+	--kit-paper: #f6f7f7;
+	--kit-accent: #2271b1;
+}
+
+* { box-sizing: border-box; }
+
+body {
+	margin: 0;
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+	line-height: 1.6;
+	color: var(--kit-ink);
+	background: #fff;
+}
+
+.kit-main {
+	max-width: 720px;
+	margin: 2rem auto;
+	padding: 0 1rem;
+}
+
+/* HEADER — o teste visual principal: fundo escuro = assets OK */
+.kit-header {
+	background: var(--kit-ink);
+	color: #fff;
+	padding: 1.25rem 2rem;
+	display: flex;
+	align-items: baseline;
+	justify-content: space-between;
+	flex-wrap: wrap;
+	gap: 1rem;
+}
+
+.kit-brand a { color: #fff; text-decoration: none; font-weight: 700; font-size: 1.2rem; }
+.kit-brand small { color: #c3c4c7; display: block; }
+
+.kit-nav ul { list-style: none; margin: 0; padding: 0; display: flex; gap: 1rem; flex-wrap: wrap; }
+.kit-nav a { color: #72aee6; text-decoration: none; }
+.kit-nav .current-menu-item a { color: #fff; border-bottom: 2px solid var(--kit-accent); }
+
+/* FOOTER */
+.kit-footer {
+	border-top: 4px solid var(--kit-accent);
+	background: var(--kit-paper);
+	padding: 1rem 2rem;
+	font-size: 0.9rem;
+	color: #50575e;
+}
+
+/* CARDS DE LOOP (arquivo) */
+.kit-card {
+	border: 1px solid #dcdcde;
+	border-radius: 6px;
+	padding: 1rem 1.25rem;
+	margin: 1rem 0;
+}
+.kit-card h2 { margin: 0 0 0.25rem; }
+.kit-card h2 a { color: var(--kit-accent); text-decoration: none; }
+.kit-meta { color: #50575e; font-size: 0.85rem; }
+
+/* PAGINAÇÃO — marcação nativa do paginate_links (type="list") */
+.htl-pagination ul {
+	list-style: none;
+	display: flex;
+	gap: 0.5rem;
+	padding: 0;
+	margin: 2rem 0;
+}
+.htl-pagination .page-numbers {
+	padding: 0.35rem 0.75rem;
+	border: 1px solid #dcdcde;
+	border-radius: 4px;
+	text-decoration: none;
+	color: var(--kit-accent);
+}
+.htl-pagination .current {
+	background: var(--kit-accent);
+	color: #fff;
+	border-color: var(--kit-accent);
+}
+
+/* COMENTÁRIOS (marcação nativa do WP) */
+.kit-post .comment-body {
+	border: 1px solid #dcdcde;
+	border-radius: 6px;
+	padding: 0.75rem 1rem;
+	margin: 0.5rem 0;
+}

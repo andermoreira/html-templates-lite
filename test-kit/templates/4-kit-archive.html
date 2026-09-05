@@ -1,0 +1,41 @@
+<!-- ============================================================
+ TEMPLATE 4 — Título:  Kit Archive   (slug esperado: kit-archive)
+ Tipo: "Template HTML" do plugin — usado em home/categoria/busca
+ via Ajustes (Templates HTML → Ajustes).
+ Assets: pasta uploads/htl-templates/kit-archive/ (css/page.css próprio).
+============================================================= -->
+{{include:kit-header}}
+
+<main class="kit-main">
+	<header class="kit-archive-head">
+		<h1>{{archive_title}}</h1>
+		{{archive_description}}
+	</header>
+
+	<!-- count="2" + paged="true": com Ajustes → Leitura em "2 posts por
+	     página" e 5 posts publicados, a paginação deve mostrar 3 páginas.
+	     A cada /page/N/ o loop lista os posts seguintes em vez de repetir. -->
+	<div class="kit-loop">
+		{{loop post_type="post" count="2" paged="true"}}
+			<article class="kit-card">
+				<h2><a href="{{permalink}}">{{post_title}}</a></h2>
+				<p class="kit-meta">{{post_date}} · {{post_author}} · {{post_categories}}</p>
+				<p>{{post_excerpt}}</p>
+			</article>
+		{{/loop}}
+	</div>
+
+	{{pagination}}
+
+	<!-- Formulário de busca nativo: navega pra ?s=termo — a busca usa
+	     ESTE template (condição "search" em Ajustes) e {{search_query}}
+	     volta preenchido. -->
+	<form class="kit-search" method="get" action="/">
+		<input type="search" name="s" value="{{search_query}}" placeholder="Buscar no site">
+		<button type="submit">Buscar</button>
+	</form>
+</main>
+
+{{include:kit-footer}}
+
+<link rel="stylesheet" href="{{assets_url}}/css/page.css">

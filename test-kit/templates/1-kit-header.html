@@ -1,0 +1,23 @@
+<!-- ============================================================
+ TEMPLATE 1 — Título:  Kit Header   (slug esperado: kit-header)
+ Tipo: "Template HTML" do plugin. Reusável via {{include:kit-header}}.
+ Assets: pasta uploads/htl-templates/kit-header/ (css + js).
+============================================================= -->
+<header class="kit-header">
+	<p class="kit-brand">
+		<a href="/">{{site_title}}</a>
+		<small>{{site_tagline}}</small>
+	</p>
+
+	<!-- Menu nativo do WordPress. Requer um menu atribuído à location
+	     "primary" (Aparência → Menus). Sem menu atribuído, aparece um
+	     comentário HTML explicativo no lugar. -->
+	<nav class="kit-nav">
+		{{menu location="primary"}}
+	</nav>
+</header>
+
+<!-- CSS/JS globais do kit — vivem na pasta DO PRÓPRIO kit-header;
+     é isso que valida que cada include resolve a própria pasta. -->
+<link rel="stylesheet" href="{{assets_url}}/css/style.css">
+<script src="{{assets_url}}/js/test.js" defer></script>

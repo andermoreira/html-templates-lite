@@ -1,0 +1,42 @@
+<!-- ============================================================
+ TEMPLATE 3 — Título:  Kit Post   (slug esperado: kit-post)
+ Tipo: "Template HTML" do plugin — usado em POST individual
+ (metabox do post ou regra "Posts e páginas por regra").
+ Assets: pasta uploads/htl-templates/kit-post/ (css/page.css próprio).
+============================================================= -->
+{{include:kit-header}}
+
+<main class="kit-main">
+	<article class="kit-post">
+		<h1>{{post_title}}</h1>
+
+		<p class="kit-meta">
+			Por {{post_author}} em {{post_date}}
+			· {{post_categories}}
+			· {{post_tags}}
+		</p>
+
+		<!-- Imagem destacada: sem thumbnail definida, src sai vazio —
+		     comportamento esperado no teste. -->
+		<img src="{{featured_image}}" alt="" class="kit-featured">
+
+		<div class="kit-content">
+			{{post_content}}
+		</div>
+
+		<!-- Campo personalizado: crie um campo "fonte" no post de teste
+		     (Editor clássico → Opções de tela → Campos personalizados).
+		     Sem o campo, a linha sai com <strong> vazio. -->
+		<aside class="kit-meta-box">
+			Fonte declarada no campo personalizado <code>fonte</code>:
+			<strong>{{meta:fonte}}</strong>
+		</aside>
+
+		{{comments_list}}
+		{{comment_form}}
+	</article>
+</main>
+
+{{include:kit-footer}}
+
+<link rel="stylesheet" href="{{assets_url}}/css/page.css">

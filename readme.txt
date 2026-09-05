@@ -1,10 +1,10 @@
 === HTML Templates Lite ===
-Contributors: SEU_USUARIO_WORDPRESS_ORG
+Contributors: andermoreira
 Tags: template, html, css, no-theme, lightweight
 Requires at least: 6.4
 Tested up to: 6.8
 Requires PHP: 7.4
-Stable tag: 0.5.0
+Stable tag: 0.6.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -24,6 +24,12 @@ A maioria dos construtores visuais (Elementor, Divi, Bricks, Oxygen) resolve "fu
 * Em qualquer post/página, um `<select>` escolhe qual template usar — o mesmo template pode ser reaproveitado em quantas páginas quiser.
 * Um template pode incluir outro com `{{include:slug-do-template}}` (ex.: um "header" e um "footer" reusáveis, incluídos dentro de vários templates de página), com proteção contra loops de inclusão.
 * `{{loop post_type="post" category="noticias" count="5"}}...{{/loop}}` traz uma lista de posts de verdade (com filtro por categoria/tag) pra dentro do template — e a tela de edição tem um formulário visual que monta esse bloco pra você, sem precisar escrever a sintaxe na mão. O campo "Categoria" some sozinho quando o tipo de conteúdo escolhido não usa essa taxonomia.
+* Paginação nativa em templates de arquivo: com `paged="true"` no `{{loop}}` e a tag `{{pagination}}`, a navegação entre páginas funciona (na /page/2/ o loop lista os próximos posts em vez de repetir os primeiros).
+* `{{assets_url}}` aponta pra pasta de assets do template (`uploads/htl-templates/{slug}/`, criada no salvamento) — envie os arquivos do template pronto (css/js/fonts/imagens) por FTP e referencie com caminhos relativos à tag. Um template incluído com `{{include}}` usa a própria pasta dele.
+* `{{menu location="primary"}}` imprime o menu do WordPress (o `<ul>` com as classes nativas, sem wrapper) na marcação do template.
+* Tags extras: `{{post_date}}`, `{{post_author}}`, `{{post_categories}}`, `{{post_tags}}`, `{{meta:chave}}` (campos personalizados/ACF), `{{comment_form}}` e `{{comments_list}}`.
+* Regras de exibição em Ajustes: aplique um template a todos os posts de um tipo (ou de uma categoria) de uma vez — a escolha manual na metabox de cada post continua vencendo.
+* O HTML do template processa shortcodes — plugins de formulário (Contact Form 7, Gravity Forms) entram colando o shortcode direto no template.
 * Botão "Pré-visualizar template" na tela de edição — mostra como o template fica sem precisar salvar numa página de verdade primeiro.
 * Botão "Salvar como cópia" — duplica um template existente pra partir dele em vez de começar do zero.
 * Só usuários com a capability `unfiltered_html` (administradores, por padrão) veem a tela de criação/edição de templates — quem não tem essa permissão nem vê "Templates HTML" no menu.
@@ -44,7 +50,7 @@ A maioria dos construtores visuais (Elementor, Divi, Bricks, Oxygen) resolve "fu
 
 = Nota de segurança sobre a saída não escapada =
 
-O plugin imprime o HTML e o CSS do template sem `esc_html`/`wp_kses` no momento da exibição — isso é intencional, é a funcionalidade central do plugin, no mesmo espírito do bloco nativo "HTML personalizado" do WordPress e do painel "CSS Adicional" do Customizador. A garantia de segurança fica no momento da GRAVAÇÃO: só um usuário com a capability `unfiltered_html` (administradores, por padrão) pode salvar HTML totalmente livre; qualquer outro papel tem o conteúdo passado por `wp_kses_post` antes de ser salvo, a mesma sanitização que o WordPress já usa no conteúdo normal de um post. Ver o comentário completo em `includes/class-htl-renderer.php`, logo acima da impressão do HTML.
+O plugin imprime o HTML e o CSS do template sem `esc_html`/`wp_kses` no momento da exibição — isso é intencional, é a funcionalidade central do plugin, no mesmo espírito do bloco nativo "HTML personalizado" do WordPress e do painel "CSS Adicional" do Customizador. A garantia de segurança fica no momento da GRAVAÇÃO: só um usuário com a capability `unfiltered_html` (administradores, por padrão) pode salvar HTML totalmente livre; qualquer outro papel tem o conteúdo passado por `wp_kses_post` antes de ser salvo, a mesma sanitização que o WordPress já usa no conteúdo normal de um post. O CSS tem toda marcação HTML removida no salvamento (`wp_strip_all_tags`, a mesma abordagem do "CSS Adicional" do Customizador). Ver o comentário completo em `includes/class-htl-renderer.php`, logo acima da impressão do HTML.
 
 = Pesquisa e referências =
 
@@ -96,7 +102,7 @@ Não. HTML e CSS são suficientes para o uso básico. Dados dinâmicos usam tags
 Só usuários com a capability `unfiltered_html` (administradores, por padrão, em instalação single-site) podem salvar HTML sem filtro algum. Qualquer outro papel tem o conteúdo passado pelo `wp_kses_post` ao salvar — a mesma sanitização que o WordPress já usa no conteúdo normal de um post.
 
 = Posts protegidos por senha funcionam? =
-Sim — o plugin detecta a proteção e mostra o formulário de senha padrão do WordPress em vez do template, então o conteúdo protegido nunca é exposto.
+Sim — tanto em posts individuais (mostra o formulário de senha padrão do WordPress em vez do template) quanto dentro de `{{loop}}`: o conteúdo de um post com senha nunca é exposto, nem na lista.
 
 = As mudanças no template têm histórico de versões? =
 Sim, a partir do WordPress 6.4: o HTML e o CSS de cada template são revisionados como qualquer conteúdo de post, então dá pra ver e restaurar versões anteriores pela tela padrão de revisões do WordPress.
@@ -107,7 +113,52 @@ Sim, a partir da 0.5.0. Vá em Templates HTML → Ajustes e escolha um template 
 = Meu template de categoria precisa saber o slug da categoria? =
 Não — dentro de um `{{loop}}`, se você não informar o atributo `category`, ele é preenchido sozinho com a categoria da URL atual (o mesmo vale pra `tag`, `author` e `s`/busca). Um valor que você escrever explicitamente sempre tem prioridade sobre esse preenchimento automático.
 
+= Como paginar um template de categoria/arquivo? =
+No formulário "Inserir lista de posts", marque "Paginação (templates de arquivo)" — ou adicione `paged="true"` no bloco `{{loop}}` — e coloque `{{pagination}}` onde a navegação deve aparecer. Na /page/2/, /3/... o loop passa a listar os posts seguintes em vez de repetir os primeiros. O número de páginas segue Ajustes → Leitura ("No máximo X posts por página").
+
+= Como uso os arquivos (css/js/fonts/imagens) de um template pronto? =
+Salve o template uma vez: o plugin cria a pasta `uploads/htl-templates/{slug}/` e mostra o caminho na tela de edição. Envie os arquivos por FTP ou pelo gerenciador de arquivos do host e referencie com `{{assets_url}}` — ex.: `<link rel="stylesheet" href="{{assets_url}}/css/main.css">`. Atenção: se o slug do template mudar, a pasta muda junto (os arquivos precisam ser movidos).
+
+= Como aplicar um template a todos os posts de uma categoria? =
+Em Templates HTML → Ajustes, seção "Posts e páginas por regra": escolha o tipo de conteúdo, a categoria (opcional) e o template. A regra vale pra qualquer post do tipo que não tenha template escolhido na metabox — e a metabox vence quando tem. A ordem das regras importa: a primeira que casar ganha.
+
+== Limitações conhecidas ==
+
+* `{{loop}}` aninhado (um loop dentro de outro) não é suportado — o bloco interno é tratado como texto e o resultado sai quebrado. Use um loop por template, ou componha trechos com `{{include}}`.
+* A tag `{{pagination}}` reflete a consulta principal do WordPress: o número de páginas segue Ajustes → Leitura ("No máximo X posts por página"). Alinhe o `count` do loop com esse valor pra lista e a navegação coincidirem.
+* `paged="true"` só faz sentido quando o loop lista o mesmo conteúdo do contexto atual (template de arquivo). Num loop com filtros próprios (ex.: `category="destaques"` numa página de categoria), a paginação da URL não corresponde ao que ele exibe.
+* Cada `{{loop}}` tem teto de 50 posts por página (proteção de servidor). Alguns atributos de consulta avançados (taxonomias customizadas, ano/mês) ficam disponíveis só via o filtro `htl_loop_query_args`.
+* `{{meta:chave}}` não expõe campos protegidos (prefixados com `_`) nem valores complexos (arrays) — é uma página pública; use o filtro `htl_template_tags` pra casos especiais.
+* Assets do template são enviados por FTP/gerenciador de arquivos — o plugin não faz upload, pra não criar superfície de ataque.
+
 == Changelog ==
+
+= 0.6.1 =
+* Interface traduzida para inglês (convenção do diretório de plugins do WordPress/GlotPress) — tradução pt-BR incluída em `languages/`.
+* Novo: `composer.json` com WordPress Coding Standards, workflow de CI no GitHub Actions (php -l 7.4–8.4, node, PHPCS) e `.distignore` pra gerar o .zip de distribuição.
+* Limpeza: capability inexistente `create_htl_templates` removida da lista de caps mapeadas (a criação já cai em `edit_htl_templates`).
+
+= 0.6.0 =
+* Novo: tag `{{assets_url}}` apontando pra pasta de assets do template (`uploads/htl-templates/{slug}/`, criada no salvamento e exibida na tela de edição). Cada `{{include}}` resolve a própria pasta — header/footer reusáveis são autossuficientes.
+* Novo: tag `{{menu location="primary"}}` imprime o menu nativo do WordPress (`<ul>` com classes WP, sem wrapper).
+* Novas tags: `{{post_date}}`, `{{post_author}}`, `{{post_categories}}`, `{{post_tags}}`, `{{meta:chave}}` (campos personalizados/ACF; campos protegidos não são expostos), `{{comment_form}}` e `{{comments_list}}`.
+* Novo: regras de exibição em Ajustes ("Posts e páginas por regra") — template aplicado a todos os posts de um tipo (ou de uma categoria), sem editar página por página. A metabox de cada post vence a regra.
+* O HTML do template agora processa shortcodes — escape hatch pra plugins de formulário e componentes.
+* Novo filtro `htl_assets_url` pra desenvolvedores alterarem a pasta de assets.
+
+= 0.5.2 =
+* Novo: paginação em templates de arquivo — atributo `paged="true"` no `{{loop}}` e tag `{{pagination}}` (navegação entre páginas). O formulário "Inserir lista de posts" ganhou a caixinha "Paginação (templates de arquivo)", que insere os dois pra você. Na /page/2/ o loop lista os próximos posts em vez de repetir os primeiros.
+* O `{{loop}}` agora recusa `post_type="htl_template"` — evita expor títulos de templates em páginas públicas.
+* Em Ferramentas → Templates HTML Lite, os links de edição só aparecem pra quem tem permissão de editar (antes podiam aparecer vazios).
+* Nova seção "Limitações conhecidas" na documentação.
+
+= 0.5.1 =
+* Corrigido: o histórico de revisões do HTML/CSS não funcionava de fato — o CPT de template não tinha o suporte `revisions`, exigido pelo framework de revisões de post meta do WP 6.4. Agora as revisões são criadas e restauráveis.
+* Corrigido: `{{post_content}}` dentro de um `{{loop}}` expunha o conteúdo completo de posts protegidos por senha. Agora mostra o formulário de senha nativo, com o mesmo comportamento de `the_content()` no loop do core.
+* Corrigido: a sanitização de CSS não cobria variações de caixa de `</style>` (ex.: `</STYLE>`), que permitiam fechar a tag e injetar HTML. Agora usa `wp_strip_all_tags` — mesma abordagem do "CSS Adicional" do Customizador — que remove qualquer marcação, em qualquer caixa.
+* A URL de pré-visualização (`?htl_preview=ID`) agora exige usuário logado e envia cabeçalhos no-cache, para não parar em cache de página.
+* A desinstalação agora remove também templates em auto-draft ou na lixeira (o valor `any` deixava esses status de fora).
+* As meta keys do plugin passam a ser registradas só nos post types onde fazem sentido: HTML/CSS no CPT de template, seletor nos post types suportados.
 
 = 0.5.0 =
 * Nova tela de Ajustes (Templates HTML → Ajustes) para escolher um template de home, categoria, tag, autor, data, busca e 404.
