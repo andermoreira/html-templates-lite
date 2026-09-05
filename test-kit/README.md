@@ -43,7 +43,7 @@ Em **Templates HTML → Adicionar novo**, crie na ordem — o título precisa ge
 | 3 | `Kit Post` | `kit-post` | `templates/3-kit-post.html` | posts individuais |
 | 4 | `Kit Archive` | `kit-archive` | `templates/4-kit-archive.html` | home/categoria/busca (Ajustes) |
 
-✅ **[ ] Pasta de assets criada no save** — ao salvar, o plugin cria `wp-content/uploads/htl-templates/{slug}/` (confira na tela de edição: o caminho aparece logo abaixo dos botões de preview/cópia).
+[ ] Pasta de assets criada no save — ao salvar, o plugin cria `wp-content/uploads/htl-templates/{slug}/` (o caminho aparece na tela de edição, abaixo dos botões de preview/cópia).
 
 ## 3. Subir os assets
 

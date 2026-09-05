@@ -2,7 +2,7 @@
 /**
  * Plugin Name:       HTML Templates Lite
  * Plugin URI:        https://github.com/andermoreira/html-templates-lite
- * Description:       Crie templates HTML/CSS reusáveis e aplique em qualquer post, página ou custom post type, ignorando completamente o tema ativo para essa URL. Não depende de nenhum outro plugin nem de um tema específico.
+ * Description:       Crie templates HTML/CSS reusáveis e aplique em qualquer post, página ou custom post type, ignorando o tema ativo só nessa URL. Sem page builder e sem outro plugin.
  * Version:           0.6.3
  * Requires at least: 6.4
  * Requires PHP:      7.4

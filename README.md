@@ -1,6 +1,6 @@
 # HTML Templates Lite
 
-> Crie templates HTML/CSS reusáveis e aplique em qualquer post, página ou custom post type, ignorando o tema ativo só nessas URLs — sem page builder, sem dependências.
+> Crie templates HTML/CSS reusáveis e aplique em qualquer post, página ou custom post type, ignorando o tema ativo só nessas URLs. Sem page builder.
 
 ![WordPress](https://img.shields.io/badge/WordPress-6.4%2B-21759B?style=flat-square&logo=wordpress)
 ![PHP](https://img.shields.io/badge/PHP-7.4%2B-777BB4?style=flat-square&logo=php&logoColor=white)
@@ -173,7 +173,7 @@ add_filter( 'htl_archive_conditions', function ( $conditions ) {
 
 ## Segurança
 
-O plugin imprime o HTML e o CSS do template sem `esc_html`/`wp_kses` na exibição — é a funcionalidade central, no mesmo espírito do bloco nativo "HTML personalizado" e do "CSS Adicional" do Customizador. A garantia fica no salvamento:
+O plugin imprime o HTML e o CSS do template sem `esc_html`/`wp_kses` na exibição — a mesma decisão do bloco nativo "HTML personalizado" e do "CSS Adicional" do Customizador. A restrição fica no salvamento:
 
 - Só usuários com a capability `unfiltered_html` (administradores, por padrão, em single-site) podem criar/editar templates — a tela nem aparece para os demais.
 - Sem essa permissão, o HTML é filtrado por `wp_kses_post` (a mesma sanitização do conteúdo normal de posts).

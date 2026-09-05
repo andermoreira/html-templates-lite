@@ -28,12 +28,12 @@ msgstr "https://github.com/andermoreira/html-templates-lite"
 #. Description of the plugin
 msgid ""
 "Create reusable HTML/CSS templates and apply them to any post, page or "
-"custom post type, completely bypassing the active theme for that URL. Does "
-"not depend on any other plugin or a specific theme."
+"custom post type, bypassing the active theme for that URL. No page builder "
+"and no extra plugins."
 msgstr ""
 "Crie templates HTML/CSS reusáveis e aplique em qualquer post, página ou "
-"custom post type, ignorando completamente o tema ativo para essa URL. Não "
-"depende de nenhum outro plugin nem de um tema específico."
+"custom post type, ignorando o tema ativo só nessa URL. Sem page builder e "
+"sem outro plugin."
 
 #. Author of the plugin
 msgid "Anderson Moreira Alves"
@@ -101,7 +101,7 @@ msgstr "Nenhum template publicado ainda. <a href=\"%s\">Crie um template</a> pri
 
 #: includes/class-htl-metabox.php
 msgid "The same template can be applied to multiple posts/pages — edit its content under HTML Templates → All Templates."
-msgstr "O mesmo template pode ser escolhido em vários posts/páginas — edite o conteúdo em HTML Templates → All Templates."
+msgstr "O mesmo template pode ser escolhido em vários posts/páginas. Edite o conteúdo em Templates HTML → Todos os templates."
 
 #: includes/class-htl-metabox.php
 msgid "Leaving it as \"None\" applies the global rules from HTML Templates → Settings, if any."

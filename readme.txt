@@ -16,7 +16,7 @@ HTML Templates Lite deixa você criar um template HTML/CSS e aplicá-lo em qualq
 
 = Por que este plugin existe =
 
-A maioria dos construtores visuais (Elementor, Divi, Bricks, Oxygen) resolve "fugir do tema" trazendo de volta um editor visual inteiro, com sua própria biblioteca de widgets e dependências de JS. Este plugin faz só a parte de infraestrutura — desligar o tema para uma URL específica e servir HTML/CSS puro — e reaproveita o que o WordPress já traz pronto (`wp_head`, `wp_body_open`, `wp_footer`, o sistema de revisões, o editor de código nativo via `wp_enqueue_code_editor`) em vez de reinventar essas peças. Menos peças novas coladas ao site, menos superfície de ataque.
+A maioria dos construtores visuais (Elementor, Divi, Bricks, Oxygen) resolve "fugir do tema" trazendo de volta um editor visual inteiro, com sua própria biblioteca de widgets e dependências de JS. Este plugin faz só a parte de infraestrutura — desligar o tema para uma URL específica e servir HTML/CSS puro — e reaproveita o que o WordPress já traz pronto (`wp_head`, `wp_body_open`, `wp_footer`, o sistema de revisões, o editor de código nativo via `wp_enqueue_code_editor`) em vez de reinventar essas peças.
 
 = O que o plugin faz =
 
@@ -50,7 +50,7 @@ A maioria dos construtores visuais (Elementor, Divi, Bricks, Oxygen) resolve "fu
 
 = Nota de segurança sobre a saída não escapada =
 
-O plugin imprime o HTML e o CSS do template sem `esc_html`/`wp_kses` no momento da exibição — isso é intencional, é a funcionalidade central do plugin, no mesmo espírito do bloco nativo "HTML personalizado" do WordPress e do painel "CSS Adicional" do Customizador. A garantia de segurança fica no momento da GRAVAÇÃO: só um usuário com a capability `unfiltered_html` (administradores, por padrão) pode salvar HTML totalmente livre; qualquer outro papel tem o conteúdo passado por `wp_kses_post` antes de ser salvo, a mesma sanitização que o WordPress já usa no conteúdo normal de um post. O CSS tem toda marcação HTML removida no salvamento (`wp_strip_all_tags`, a mesma abordagem do "CSS Adicional" do Customizador). Ver o comentário completo em `includes/class-htl-renderer.php`, logo acima da impressão do HTML.
+O plugin imprime o HTML e o CSS do template sem `esc_html`/`wp_kses` no momento da exibição — a mesma decisão do bloco nativo "HTML personalizado" do WordPress e do painel "CSS Adicional" do Customizador. A restrição fica no momento da GRAVAÇÃO: só um usuário com a capability `unfiltered_html` (administradores, por padrão) pode salvar HTML totalmente livre; qualquer outro papel tem o conteúdo passado por `wp_kses_post` antes de ser salvo, a mesma sanitização que o WordPress já usa no conteúdo normal de um post. O CSS tem toda marcação HTML removida no salvamento (`wp_strip_all_tags`, a mesma abordagem do "CSS Adicional" do Customizador). Ver o comentário completo em `includes/class-htl-renderer.php`, logo acima da impressão do HTML.
 
 = Pesquisa e referências =
 
