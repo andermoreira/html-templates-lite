@@ -17,16 +17,24 @@
  *   2. resolve_includes()  — compõe {{include:slug}} (outros templates).
  *   3. resolve_menus()     — expande {{menu location="..."}} com o menu
  *                            nativo do WordPress.
- *   4. resolve_loops()     — expande {{loop ...}}...{{/loop}} em listas
+ *   4. resolve_meta_outside_loops() — {{meta:}}/{{meta_url:}} resolvidos
+ *                            SOMENTE no HTML autoriado do template e fora
+ *                            de corpos de {{loop}} (cada corpo ganha
+ *                            resolução própria por post, dentro do loop).
+ *                            O output gerado nunca é re-escaneado: texto
+ *                            de post contendo o literal {{meta:x}} não
+ *                            resolve nada — é o que impede injeção de
+ *                            segunda ordem via conteúdo de baixo
+ *                            privilégio (que o core não passa por kses).
+ *   5. resolve_loops()     — expande {{loop ...}}...{{/loop}} em listas
  *                            de posts/categorias reais do WordPress,
  *                            já filtrando automaticamente pela
  *                            categoria/tag/autor/busca atual quando o
  *                            template está sendo usado como arquivo.
- *   5. replace_tags()      — troca as tags que sobraram: no contexto de
+ *   6. replace_tags()      — troca as tags que sobraram: no contexto de
  *                            UM post (posts/páginas) ou no contexto
- *                            "sem post" de um arquivo/home/busca/404
- *                            (+ {{meta:chave}} por post).
- *   6. do_shortcode()      — processa shortcodes de plugins (formulários
+ *                            "sem post" de um arquivo/home/busca/404.
+ *   7. do_shortcode()      — processa shortcodes de plugins (formulários
  *                            etc.) colados no HTML do template.
  */
 
@@ -271,6 +279,16 @@ class HTL_Renderer {
 
 		$html = $this->resolve_includes( $html, $css_bucket );
 		$html = $this->resolve_menus( $html );
+
+		// Resolução de meta SOMENTE sobre HTML autoriado, fora de corpos
+		// de {{loop}} — cada corpo resolve a própria meta por post dentro
+		// de resolve_loops(). O output de expansão, que embute conteúdo de
+		// posts de autores comuns (dado que o core não passa por kses no
+		// save), nunca volta pelo parser de meta: um post contendo o
+		// literal "{{meta:evil}}" não injeta resolução na passada externa
+		// (stored XSS de segunda ordem).
+		$html = $this->resolve_meta_outside_loops( $html, $post_id );
+
 		$html = $this->resolve_loops( $html );
 		$html = $this->replace_tags( $html, $post_id );
 
@@ -502,7 +520,12 @@ class HTL_Renderer {
 				$output = '';
 
 				foreach ( $query->posts as $looped_post ) {
-					$output .= $this->replace_tags( $inner_template, $looped_post->ID );
+					// Meta resolvida no TEMPLATE INTERNO (autoriado) contra
+					// o post da iteração — o output da expansão, que embute
+					// conteúdo de posts de autores comuns, nunca passa de
+					// novo pelo parser de meta (injeção de segunda ordem).
+					$inner   = $this->resolve_meta_tags( $inner_template, $looped_post->ID );
+					$output .= $this->replace_tags( $inner, $looped_post->ID );
 				}
 
 				if ( '' === $output ) {
@@ -553,12 +576,18 @@ class HTL_Renderer {
 	}
 
 	/**
-	 * Expande {{meta:chave}} com campos personalizados do post (ACF
-	 * incluso — campos simples ficam na chave pura). Campos protegidos
-	 * (prefixo _) não são expostos: a página é pública e não dá pra saber
-	 * o que um plugin guarda num meta interno. Valores complexos (arrays)
-	 * saem vazios — quem precisar deles deve usar o filtro
-	 * htl_template_tags.
+	 * Resolve {{meta:chave}}/{{meta_url:chave}} numa string AUTORIADA
+	 * (template raiz ou corpo interno de um {{loop}}) contra $post_id.
+	 *
+	 * A saída é SEMPRE escapada: o valor do campo é dado do autor do
+	 * post — que normalmente NÃO tem unfiltered_html, e o core não passa
+	 * post meta por kses no save (diferente de título/conteúdo/excerto).
+	 *
+	 *   - {{meta:chave}}     → esc_html (texto e atributos);
+	 *   - {{meta_url:chave}} → esc_url (href/src; neutraliza javascript:).
+	 *
+	 * Não existe variante "crua" de propósito — seria reabrir a rota de
+	 * XSS. Casos especiais: filtro htl_template_tags.
 	 */
 	private function resolve_meta_tags( $html, $post_id ) {
 		if ( ! $post_id ) {
@@ -566,20 +595,70 @@ class HTL_Renderer {
 		}
 
 		return preg_replace_callback(
-			'/\{\{meta:([a-zA-Z0-9_-]+)\}\}/',
+			'/\{\{(meta(?:_url)?):([a-zA-Z0-9_-]+)\}\}/',
 			function ( $matches ) use ( $post_id ) {
-				$key = $matches[1];
-
-				if ( '_' === $key[0] ) {
-					return __( '<!-- htl: protected meta keys (prefixed with _) are not exposed -->', 'html-templates-lite' );
-				}
-
-				$value = get_post_meta( $post_id, $key, true );
-
-				return is_scalar( $value ) ? (string) $value : '';
+				return $this->resolve_meta_tag( $matches[1], $matches[2], $post_id );
 			},
 			$html
 		);
+	}
+
+	/**
+	 * Passada de meta do template raiz: resolve as tags da região
+	 * autoriada, PULANDO corpos de {{loop}} — a iteração resolve a meta
+	 * dela própria, contra o post da iteração (resolve_loops), e o output
+	 * da expansão não volta pelo parser. Sem esse pulo, um post cujo
+	 * conteúdo contivesse o literal "{{meta:evil}}" imprimia o meta do
+	 * post visitado, cru, pra todo visitante.
+	 */
+	private function resolve_meta_outside_loops( $html, $post_id ) {
+		if ( ! $post_id ) {
+			return $html;
+		}
+
+		return preg_replace_callback(
+			'/\{\{loop\b.*?\{\{\/loop\}\}|\{\{(meta(?:_url)?):([a-zA-Z0-9_-]+)\}\}/is',
+			function ( $matches ) use ( $post_id ) {
+				// Alternância: grupo 2 só existe quando o match é tag de
+				// meta; um bloco {{loop}} inteiro volta intocado.
+				if ( ! isset( $matches[2] ) ) {
+					return $matches[0];
+				}
+
+				return $this->resolve_meta_tag( $matches[1], $matches[2], $post_id );
+			},
+			$html
+		);
+	}
+
+	/**
+	 * Resolve UMA tag de meta. Guards em ordem: senha > chave protegida >
+	 * escape do valor.
+	 */
+	private function resolve_meta_tag( $type, $key, $post_id ) {
+		// Meta é conteúdo do post: em posts protegidos por senha, nada
+		// sai — nem dentro de {{loop}} (o singular com senha nem chega
+		// aqui: render_password_form() intercepta antes).
+		if ( post_password_required( $post_id ) ) {
+			return __( '<!-- htl: meta of a password-protected post is not exposed -->', 'html-templates-lite' );
+		}
+
+		// is_protected_meta cobre o prefixo "_" nativo E as chaves que
+		// plugins marcarem como protegidas — mais completo que checar só
+		// o prefixo.
+		if ( is_protected_meta( $key, 'post' ) ) {
+			return __( '<!-- htl: protected meta keys are not exposed -->', 'html-templates-lite' );
+		}
+
+		$value = get_post_meta( $post_id, $key, true );
+
+		if ( ! is_scalar( $value ) ) {
+			return '';
+		}
+
+		return 'meta_url' === $type
+			? esc_url( (string) $value )
+			: esc_html( (string) $value );
 	}
 
 	/**
@@ -692,10 +771,6 @@ class HTL_Renderer {
 		$post_content = post_password_required( $post_id )
 			? get_the_password_form( $post_id )
 			: apply_filters( 'the_content', get_post_field( 'post_content', $post_id ) );
-
-		// Campos personalizados ({{meta:chave}}) — resolvidos por post,
-		// então funcionam também dentro de {{loop}}.
-		$html = $this->resolve_meta_tags( $html, $post_id );
 
 		$tags = apply_filters(
 			'htl_template_tags',
