@@ -136,6 +136,12 @@ Em Templates HTML → Ajustes, seção "Posts e páginas por regra": escolha o t
 
 == Changelog ==
 
+= Não lançado =
+
+* `{{loop}}`: o atributo `orderby` agora é validado contra uma whitelist (date, title, rand, menu_order, modified, comment_count, ID) — valor não reconhecido cai em `date`, em vez de repassar string arbitrária ao WP_Query.
+* Tela Ferramentas → Templates HTML Lite: aviso quando a lista atinge o teto de itens exibidos, em vez de omitir os demais em silêncio.
+* Interno: as condições de arquivo (home/categoria/tag/.../404) passam a ter fonte única em `HTL_Settings::archive_conditions()`, reusada pelo renderer — antes cada classe mantinha a própria cópia das chaves.
+
 = 0.6.3 =
 * Tags do template na tela de edição agora são clicáveis: inserem no HTML, na posição do cursor, agrupadas por contexto (site, post, campo, arquivo).
 * Incluídas na referência as tags que o renderer já tinha: `{{site_title}}`, `{{site_tagline}}`, `{{current_year}}`.
