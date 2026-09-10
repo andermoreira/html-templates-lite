@@ -27,6 +27,11 @@ class HTL_Admin_List {
 		);
 	}
 
+	/** Teto de linhas exibidas nesta tela de conveniência. Acima disso,
+	 *  mostramos um aviso de truncamento em vez de omitir itens em
+	 *  silêncio — a gestão real é feita nas telas nativas de cada tipo. */
+	const LIST_LIMIT = 200;
+
 	public function render_page() {
 		// meta_query com compare '>' + type NUMERIC filtra só quem tem
 		// um template de verdade escolhido (id > 0) — um select deixado
@@ -34,7 +39,7 @@ class HTL_Admin_List {
 		$posts = get_posts(
 			array(
 				'post_type'      => apply_filters( 'htl_supported_post_types', array( 'post', 'page' ) ),
-				'posts_per_page' => 200,
+				'posts_per_page' => self::LIST_LIMIT,
 				'meta_query'     => array( // phpcs:ignore WordPress.DB.SlowDBQuery
 					array(
 						'key'     => HTL_Metabox::META_TEMPLATE_ID,
@@ -96,6 +101,18 @@ class HTL_Admin_List {
 						<?php endforeach; ?>
 					</tbody>
 				</table>
+
+				<?php if ( count( $posts ) >= self::LIST_LIMIT ) : ?>
+					<p class="description">
+						<?php
+						printf(
+							/* translators: %d: número máximo de itens listados nesta tela */
+							esc_html__( 'Showing the first %d items. Manage the rest from the Posts and Pages screens.', 'html-templates-lite' ),
+							(int) self::LIST_LIMIT
+						);
+						?>
+					</p>
+				<?php endif; ?>
 			<?php endif; ?>
 
 			<p>

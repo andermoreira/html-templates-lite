@@ -26,6 +26,34 @@ class HTL_Settings {
 	const SETTINGS_KEY = 'htl_archive_settings_group';
 	const RULES_KEY    = 'htl_singular_rules';
 
+	/**
+	 * Fonte única das condições de arquivo: chave => callback de
+	 * verificação do WordPress. A ORDEM importa — do mais específico
+	 * (404) pro mais genérico (home), igual à hierarquia de templates do
+	 * core. Tanto a tela de Ajustes (labels, sanitize) quanto o renderer
+	 * (HTL_Renderer::resolve_archive_template) leem daqui, via
+	 * archive_conditions(), pra as chaves nunca saírem de sincronia.
+	 */
+	const ARCHIVE_CONDITIONS = array(
+		'404'      => 'is_404',
+		'search'   => 'is_search',
+		'author'   => 'is_author',
+		'date'     => 'is_date',
+		'tag'      => 'is_tag',
+		'category' => 'is_category',
+		'home'     => 'is_home',
+	);
+
+	/**
+	 * As condições de arquivo (chave => callback), filtráveis por
+	 * htl_archive_conditions. Centralizado aqui e reusado pelo renderer
+	 * — antes cada classe declarava a própria cópia do array, e as
+	 * chaves precisavam ser mantidas em sincronia na mão.
+	 */
+	public static function archive_conditions() {
+		return apply_filters( 'htl_archive_conditions', self::ARCHIVE_CONDITIONS );
+	}
+
 	/** Hook da página de Ajustes — preenchido em register_page(), usado
 	 *  pra enfileirar o JS das regras só nesta tela. */
 	private $page_hook = '';
@@ -91,15 +119,17 @@ class HTL_Settings {
 	}
 
 	/**
-	 * Cada condição vira uma linha na tela — chave usada tanto na
-	 * option quanto em HTL_Renderer::resolve_archive_template().
-	 * Filtrável pra quem quiser adicionar mais condições (ex.: arquivo
-	 * de um custom post type específico) sem editar o plugin — desde
-	 * que também registre a condição correspondente via
-	 * htl_archive_conditions, no renderer.
+	 * Cada condição vira uma linha na tela (chave => label). A ORDEM
+	 * aqui é de UI (do mais genérico pro mais específico) e é
+	 * independente da ordem de RESOLUÇÃO em archive_conditions() — só o
+	 * conjunto de chaves precisa coincidir. Filtrável pra rótulos
+	 * customizados via htl_archive_condition_labels; quem adicionar uma
+	 * condição nova precisa registrá-la TAMBÉM em htl_archive_conditions
+	 * (callback), senão a linha é descartada aqui, pra não oferecer na
+	 * tela uma condição que o renderer nunca vai saber resolver.
 	 */
 	private function get_conditions() {
-		return apply_filters(
+		$labels = apply_filters(
 			'htl_archive_condition_labels',
 			array(
 				'home'     => __( 'Homepage / blog posts listing', 'html-templates-lite' ),
@@ -111,6 +141,12 @@ class HTL_Settings {
 				'404'      => __( '404 page (not found)', 'html-templates-lite' ),
 			)
 		);
+
+		// Descarta qualquer chave sem callback de resolução correspondente
+		// — mantém labels e condições em sincronia mesmo com os filtros.
+		$resolvable = self::archive_conditions();
+
+		return array_intersect_key( $labels, $resolvable );
 	}
 
 	/**

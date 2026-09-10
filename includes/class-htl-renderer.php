@@ -50,6 +50,13 @@ class HTL_Renderer {
 	 *  quantidade absurda e travar o servidor numa consulta gigante. */
 	const MAX_LOOP_POSTS = 50;
 
+	/** Valores de `orderby` aceitos no {{loop}}. Qualquer coisa fora
+	 *  desta lista cai em 'date' — o helper da metabox só oferece
+	 *  date/title/rand, mas um {{loop}} escrito à mão pode conter
+	 *  qualquer string, então validamos contra uma whitelist em vez de
+	 *  repassar valor arbitrário ao WP_Query. */
+	const ALLOWED_ORDERBY = array( 'date', 'title', 'rand', 'menu_order', 'modified', 'comment_count', 'ID' );
+
 	public function __construct() {
 		// Prioridade 99: garante que rodamos DEPOIS de outros plugins que
 		// também mexam em template_include, então nossa decisão é a
@@ -165,18 +172,9 @@ class HTL_Renderer {
 			return 0;
 		}
 
-		$conditions = apply_filters(
-			'htl_archive_conditions',
-			array(
-				'404'      => 'is_404',
-				'search'   => 'is_search',
-				'author'   => 'is_author',
-				'date'     => 'is_date',
-				'tag'      => 'is_tag',
-				'category' => 'is_category',
-				'home'     => 'is_home',
-			)
-		);
+		// Fonte única das chaves/callbacks (e do filtro htl_archive_conditions),
+		// compartilhada com a tela de Ajustes — ver HTL_Settings::archive_conditions().
+		$conditions = HTL_Settings::archive_conditions();
 
 		foreach ( $conditions as $key => $condition ) {
 			if ( empty( $option[ $key ] ) || ! is_callable( $condition ) ) {
@@ -460,10 +458,20 @@ class HTL_Renderer {
 					$atts['s'] = get_search_query();
 				}
 
+				// orderby só é aceito se estiver na whitelist — caso
+				// contrário cai em 'date', em vez de repassar uma string
+				// arbitrária ao WP_Query. sanitize_key normaliza a caixa
+				// antes da comparação (o WP espera minúsculas, exceto ID).
+				$requested_orderby = sanitize_key( $atts['orderby'] );
+				if ( 'id' === $requested_orderby ) {
+					$requested_orderby = 'ID';
+				}
+				$orderby = in_array( $requested_orderby, self::ALLOWED_ORDERBY, true ) ? $requested_orderby : 'date';
+
 				$query_args = array(
 					'post_type'      => sanitize_key( $atts['post_type'] ),
 					'posts_per_page' => min( self::MAX_LOOP_POSTS, max( 1, absint( $atts['count'] ) ) ),
-					'orderby'        => sanitize_key( $atts['orderby'] ),
+					'orderby'        => $orderby,
 					'order'          => ( 'ASC' === strtoupper( $atts['order'] ) ) ? 'ASC' : 'DESC',
 					// Não precisamos do total de posts pra paginação
 					// aqui — pular essa contagem evita uma consulta
@@ -746,7 +754,7 @@ class HTL_Renderer {
 					'{{pagination}}'          => $this->render_pagination(),
 					'{{site_title}}'          => get_bloginfo( 'name' ),
 					'{{site_tagline}}'        => get_bloginfo( 'description' ),
-					'{{current_year}}'        => date_i18n( 'Y' ),
+					'{{current_year}}'        => wp_date( 'Y' ),
 				),
 				$post_id
 			);
@@ -794,7 +802,7 @@ class HTL_Renderer {
 				'{{comments_list}}'   => $this->render_comments_list( $post_id ),
 				'{{site_title}}'      => get_bloginfo( 'name' ),
 				'{{site_tagline}}'    => get_bloginfo( 'description' ),
-				'{{current_year}}'    => date_i18n( 'Y' ),
+				'{{current_year}}'    => wp_date( 'Y' ),
 			),
 			$post_id
 		);

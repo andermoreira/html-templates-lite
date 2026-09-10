@@ -634,6 +634,14 @@ class HTL_Metabox {
 
 		$original = get_post( $template_id );
 
+		// A checagem de get_post_type acima já garante que o post existe,
+		// mas entre aquela leitura e esta o post pode ter sido apagado
+		// (outra aba, outro usuário) — guard explícito pra não acessar
+		// ->post_title num null logo abaixo.
+		if ( ! $original ) {
+			wp_die( esc_html__( 'Invalid template.', 'html-templates-lite' ) );
+		}
+
 		$new_id = wp_insert_post(
 			array(
 				'post_type'   => HTL_Post_Type::SLUG,
