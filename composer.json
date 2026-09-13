@@ -12,7 +12,9 @@
 	"require-dev": {
 		"php": ">=7.4",
 		"wp-coding-standards/wpcs": "^3.1",
-		"dealerdirect/phpcodesniffer-composer-installer": "^1.0"
+		"dealerdirect/phpcodesniffer-composer-installer": "^1.0",
+		"phpunit/phpunit": "^9.6",
+		"doctrine/instantiator": "^1.5"
 	},
 	"config": {
 		"allow-plugins": {
@@ -22,6 +24,7 @@
 	"scripts": {
 		"lint:php": "for f in *.php includes/*.php; do php -l \"$f\" || exit 1; done",
 		"lint:js": "node --check assets/admin.js && node --check assets/settings.js",
-		"lint:standards": "vendor/bin/phpcs --standard=WordPress --extensions=php --ignore=*/vendor/* --parallel=8 ."
+		"lint:standards": "vendor/bin/phpcs --standard=phpcs.xml --extensions=php --parallel=8 .",
+		"test": "vendor/bin/phpunit --configuration phpunit.xml.dist"
 	}
 }

@@ -69,7 +69,7 @@ class HTL_Renderer {
 		// -> botão "Pré-visualizar template"). Roda ANTES de tudo porque a
 		// URL de preview não precisa corresponder a nenhum post/página
 		// real — ela usa a home como âncora só pra ter uma URL válida.
-		if ( isset( $_GET['htl_preview'] ) ) {
+		if ( isset( $_GET['htl_preview'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- preview is protected by authentication and capability checks.
 			$this->maybe_render_preview();
 			// Se chegou até aqui, a pré-visualização foi recusada (sem
 			// permissão, ID inválido) — segue o fluxo normal abaixo.
@@ -224,7 +224,7 @@ class HTL_Renderer {
 			return;
 		}
 
-		$template_id = absint( $_GET['htl_preview'] );
+		$template_id = absint( wp_unslash( $_GET['htl_preview'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended,WordPress.Security.ValidatedSanitizedInput.InputNotValidated -- preview is protected by authentication and capability checks.
 
 		if ( ! $this->template_is_valid( $template_id ) ) {
 			return;
@@ -236,7 +236,7 @@ class HTL_Renderer {
 			return;
 		}
 
-		$context_id = isset( $_GET['htl_preview_context'] ) ? absint( $_GET['htl_preview_context'] ) : $template_id;
+		$context_id = isset( $_GET['htl_preview_context'] ) ? absint( wp_unslash( $_GET['htl_preview_context'] ) ) : $template_id; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- preview is protected by authentication and capability checks.
 
 		// O post de contexto é renderizado por inteiro (título, conteúdo,
 		// meta): exige acesso de LEITURA a ele. Sem esse guard, um usuário
@@ -325,12 +325,14 @@ class HTL_Renderer {
 				$slug = $matches[1];
 
 				if ( in_array( $slug, $visited, true ) ) {
+					/* translators: %s: included template slug. */
 					return sprintf( __( '<!-- htl: inclusion loop detected in "%s" -->', 'html-templates-lite' ), esc_html( $slug ) );
 				}
 
 				$included = get_page_by_path( $slug, OBJECT, HTL_Post_Type::SLUG );
 
 				if ( ! $included || 'publish' !== $included->post_status ) {
+					/* translators: %s: included template slug. */
 					return sprintf( __( '<!-- htl: template "%s" not found or not published -->', 'html-templates-lite' ), esc_html( $slug ) );
 				}
 
@@ -378,7 +380,9 @@ class HTL_Renderer {
 				}
 
 				if ( ! has_nav_menu( $location ) ) {
+					/* translators: %s: menu location slug. */
 					return sprintf(
+						/* translators: %s: menu location slug. */
 						__( '<!-- htl: menu "%s" has no menu assigned (Appearance → Menus) -->', 'html-templates-lite' ),
 						esc_html( $location )
 					);
@@ -545,6 +549,7 @@ class HTL_Renderer {
 				if ( '' === $output ) {
 					// Nenhum post encontrado — comentário visível em vez
 					// de o bloco simplesmente desaparecer sem explicação.
+					/* translators: %s: serialized loop attributes. */
 					$output = sprintf( __( '<!-- htl: no posts found for this loop (%s) -->', 'html-templates-lite' ), esc_html( $attr_string ) );
 				}
 
@@ -834,46 +839,46 @@ class HTL_Renderer {
 	<meta charset="<?php bloginfo( 'charset' ); ?>" />
 	<meta name="viewport" content="width=device-width, initial-scale=1" />
 	<title><?php echo esc_html( wp_get_document_title() ); ?></title>
-	<?php
-	// wp_head() é o gancho que outros plugins esperam encontrar em
-	// QUALQUER página do WordPress — SEO, analytics, pixels de
-	// conversão, etc. Chamando ele aqui, esses plugins continuam
-	// funcionando mesmo sem o tema estar envolvido.
-	wp_head();
-	?>
-	<?php if ( ! empty( $css ) ) : ?>
+		<?php
+		// wp_head() é o gancho que outros plugins esperam encontrar em
+		// QUALQUER página do WordPress — SEO, analytics, pixels de
+		// conversão, etc. Chamando ele aqui, esses plugins continuam
+		// funcionando mesmo sem o tema estar envolvido.
+		wp_head();
+		?>
+		<?php if ( ! empty( $css ) ) : ?>
 	<style id="htl-inline-css"><?php echo $css; // phpcs:ignore WordPress.Security.EscapeOutput -- ver nota de segurança logo abaixo. ?></style>
 	<?php endif; ?>
 </head>
 <body <?php body_class( 'htl-template' ); ?>>
-	<?php
-	// wp_body_open() é o hook que a admin bar, skip links de
-	// acessibilidade e alguns plugins de analytics esperam encontrar
-	// logo após a abertura do <body>.
-	wp_body_open();
+		<?php
+		// wp_body_open() é o hook que a admin bar, skip links de
+		// acessibilidade e alguns plugins de analytics esperam encontrar
+		// logo após a abertura do <body>.
+		wp_body_open();
 
-	/*
-	 * ---------------------------------------------------------------
-	 * Nota para quem revisar este plugin na fila do WordPress.org: a
-	 * linha abaixo, e a linha do <style> acima, fazem `echo` de HTML e
-	 * CSS SEM esc_html/wp_kses no momento da IMPRESSÃO. Isso é
-	 * intencional — é a funcionalidade central do plugin, no mesmo
-	 * espírito do bloco nativo "HTML personalizado" do WordPress e do
-	 * painel "CSS Adicional" do Customizador, que também imprimem o
-	 * conteúdo do autor sem escapar.
-	 *
-	 * A garantia de segurança não fica aqui — fica no momento da
-	 * GRAVAÇÃO, em HTL_Metabox::save_template_content(). Lá, o HTML só
-	 * é salvo 100% livre se o usuário logado tiver a capability
-	 * `unfiltered_html` (administradores, por padrão, em instalação
-	 * single-site); qualquer outro papel tem o conteúdo passado por
-	 * wp_kses_post antes de ser salvo — a mesma sanitização que o
-	 * próprio WordPress usa no conteúdo normal de um post.
-	 * ---------------------------------------------------------------
-	 */
-	echo $body_html; // phpcs:ignore WordPress.Security.EscapeOutput -- sanitizado na gravação, ver nota acima.
-	wp_footer();
-	?>
+		/*
+		* ---------------------------------------------------------------
+		* Nota para quem revisar este plugin na fila do WordPress.org: a
+		* linha abaixo, e a linha do <style> acima, fazem `echo` de HTML e
+		* CSS SEM esc_html/wp_kses no momento da IMPRESSÃO. Isso é
+		* intencional — é a funcionalidade central do plugin, no mesmo
+		* espírito do bloco nativo "HTML personalizado" do WordPress e do
+		* painel "CSS Adicional" do Customizador, que também imprimem o
+		* conteúdo do autor sem escapar.
+		*
+		* A garantia de segurança não fica aqui — fica no momento da
+		* GRAVAÇÃO, em HTL_Metabox::save_template_content(). Lá, o HTML só
+		* é salvo 100% livre se o usuário logado tiver a capability
+		* `unfiltered_html` (administradores, por padrão, em instalação
+		* single-site); qualquer outro papel tem o conteúdo passado por
+		* wp_kses_post antes de ser salvo — a mesma sanitização que o
+		* próprio WordPress usa no conteúdo normal de um post.
+		* ---------------------------------------------------------------
+		*/
+		echo $body_html; // phpcs:ignore WordPress.Security.EscapeOutput -- sanitizado na gravação, ver nota acima.
+		wp_footer();
+		?>
 </body>
 </html>
 		<?php

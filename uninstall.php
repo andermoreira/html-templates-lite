@@ -18,7 +18,7 @@ $meta_keys = array( '_htl_template_html', '_htl_template_css', '_htl_template_id
 
 foreach ( $meta_keys as $meta_key ) {
 	// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- só roda uma vez, no momento da desinstalação.
-	$wpdb->delete( $wpdb->postmeta, array( 'meta_key' => $meta_key ) );
+	$wpdb->delete( $wpdb->postmeta, array( 'meta_key' => $meta_key ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- uninstall must remove all matching plugin metadata.
 }
 
 // Remove também os posts do tipo "htl_template" em si — não só o post

@@ -24,10 +24,10 @@ class HTL_Metabox {
 	// Chaves de post meta centralizadas aqui — evita strings mágicas
 	// espalhadas pelas outras classes (elas leem estas constantes).
 	const META_HTML        = '_htl_template_html'; // Vive nos posts "htl_template".
-	const META_CSS          = '_htl_template_css';  // Vive nos posts "htl_template".
-	const META_TEMPLATE_ID  = '_htl_template_id';   // Vive nos posts/páginas normais — aponta pro template escolhido.
-	const NONCE_ACTION      = 'htl_save_template';
-	const NONCE_FIELD       = 'htl_nonce';
+	const META_CSS         = '_htl_template_css';  // Vive nos posts "htl_template".
+	const META_TEMPLATE_ID = '_htl_template_id';   // Vive nos posts/páginas normais — aponta pro template escolhido.
+	const NONCE_ACTION     = 'htl_save_template';
+	const NONCE_FIELD      = 'htl_nonce';
 
 	public function __construct() {
 		add_action( 'add_meta_boxes', array( $this, 'register_metabox' ) );
@@ -237,7 +237,7 @@ class HTL_Metabox {
 
 		$can_use_raw_html = current_user_can( 'unfiltered_html' );
 		?>
-	<?php if ( 'auto-draft' !== $post->post_status ) : ?>
+		<?php if ( 'auto-draft' !== $post->post_status ) : ?>
 		<p>
 			<a
 				href="<?php echo esc_url( add_query_arg( 'htl_preview', $post->ID, home_url( '/' ) ) ); ?>"
@@ -248,7 +248,7 @@ class HTL_Metabox {
 				<?php esc_html_e( 'Preview template', 'html-templates-lite' ); ?>
 			</a>
 			<!-- Ação mutante via POST com nonce: como link GET, prefetchers
-			     e scanners disparavam duplicações indesejadas. -->
+				e scanners disparavam duplicações indesejadas. -->
 			<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" style="display:inline;">
 				<input type="hidden" name="action" value="htl_duplicate_template">
 				<input type="hidden" name="template_id" value="<?php echo esc_attr( $post->ID ); ?>">
@@ -262,13 +262,13 @@ class HTL_Metabox {
 		</p>
 	<?php endif; ?>
 
-	<?php $htl_assets_dir = '' !== $post->post_name ? $this->assets_dir( $post->post_name ) : ''; ?>
-	<?php if ( '' !== $htl_assets_dir ) : ?>
+		<?php $htl_assets_dir = '' !== $post->post_name ? $this->assets_dir( $post->post_name ) : ''; ?>
+		<?php if ( '' !== $htl_assets_dir ) : ?>
 		<p class="description">
 			<?php
 			printf(
 				/* translators: %s: caminho da pasta de assets do template */
-				esc_html__( 'Asset folder for this template (upload css/js/fonts via FTP and reference them with %s in the HTML): %s', 'html-templates-lite' ),
+				esc_html__( 'Asset folder for this template (upload css/js/fonts via FTP and reference them with %1$s in the HTML): %2$s', 'html-templates-lite' ),
 				'<code>{{assets_url}}</code>',
 				'<code>' . esc_html( $htl_assets_dir ) . '</code>'
 			);
@@ -521,7 +521,7 @@ class HTL_Metabox {
 	 */
 	public function save( $post_id ) {
 		if ( ! isset( $_POST[ self::NONCE_FIELD ] ) ||
-			! wp_verify_nonce( wp_unslash( $_POST[ self::NONCE_FIELD ] ), self::NONCE_ACTION ) ) {
+			! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST[ self::NONCE_FIELD ] ) ), self::NONCE_ACTION ) ) {
 			return;
 		}
 
@@ -544,7 +544,7 @@ class HTL_Metabox {
 	 * Salva qual template foi escolhido num post/página comum.
 	 */
 	private function save_template_picker( $post_id ) {
-		$template_id = isset( $_POST['htl_template_id'] ) ? absint( $_POST['htl_template_id'] ) : 0;
+		$template_id = isset( $_POST['htl_template_id'] ) ? absint( $_POST['htl_template_id'] ) : 0; // phpcs:ignore WordPress.Security.NonceVerification.Missing -- save() verifies the nonce before dispatching.
 
 		// Só aceita o valor se ele de fato apontar pra um post do tipo
 		// certo — protege contra um ID "órfão" caso alguém manipule o
@@ -561,8 +561,8 @@ class HTL_Metabox {
 	 * Salva o HTML/CSS de um template (post do tipo htl_template).
 	 */
 	private function save_template_content( $post_id ) {
-		if ( isset( $_POST['htl_template_html'] ) ) {
-			$raw_html = wp_unslash( $_POST['htl_template_html'] );
+		if ( isset( $_POST['htl_template_html'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing -- save() verifies the nonce before dispatching.
+			$raw_html = wp_unslash( $_POST['htl_template_html'] ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized,WordPress.Security.NonceVerification.Missing -- HTML is sanitized conditionally below; save() verifies the nonce.
 
 			// Só quem tem a capability unfiltered_html (administradores,
 			// por padrão, em instalação single-site) pode salvar HTML
@@ -576,8 +576,8 @@ class HTL_Metabox {
 			update_post_meta( $post_id, self::META_HTML, $sanitized_html );
 		}
 
-		if ( isset( $_POST['htl_template_css'] ) ) {
-			$raw_css = wp_unslash( $_POST['htl_template_css'] );
+		if ( isset( $_POST['htl_template_css'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing -- save() verifies the nonce before dispatching.
+			$raw_css = wp_unslash( $_POST['htl_template_css'] ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized,WordPress.Security.NonceVerification.Missing -- CSS is stripped below; save() verifies the nonce.
 
 			// O CSS vai impresso dentro de uma tag <style> — remove TODA
 			// marcação HTML (wp_strip_all_tags cobre </style> em qualquer

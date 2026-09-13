@@ -105,8 +105,8 @@ class HTL_Post_Type {
 	public function require_unfiltered_html_for_templates( $caps, $cap, $user_id, $args ) {
 		foreach ( $caps as $index => $mapped_cap ) {
 			if ( in_array( $mapped_cap, self::TEMPLATE_CAPS, true ) ) {
-				$resolved         = map_meta_cap( 'unfiltered_html', $user_id );
-				$caps[ $index ]   = $resolved[0];
+				$resolved       = map_meta_cap( 'unfiltered_html', $user_id );
+				$caps[ $index ] = $resolved[0];
 			}
 		}
 

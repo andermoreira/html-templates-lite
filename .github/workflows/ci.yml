@@ -49,9 +49,22 @@ jobs:
       - name: Install dev dependencies
         run: composer install --no-interaction --prefer-dist --no-progress
 
-      # Advisory enquanto o código não está 100% limpo — o job reporta
-      # como warning e NÃO bloqueia o merge. Para bloquear, remova
-      # continue-on-error após zerar os relatórios.
-      - name: PHPCS (advisory)
-        continue-on-error: true
-        run: vendor/bin/phpcs --standard=WordPress --extensions=php --ignore=*/vendor/* --parallel=8 .
+      - name: PHPCS (blocking)
+        run: composer run lint:standards
+
+  tests:
+    name: PHPUnit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          coverage: none
+
+      - name: Install dev dependencies
+        run: composer install --no-interaction --prefer-dist --no-progress
+
+      - name: PHPUnit
+        run: composer test

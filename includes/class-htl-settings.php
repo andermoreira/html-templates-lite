@@ -56,6 +56,7 @@ class HTL_Settings {
 
 	/** Hook da página de Ajustes — preenchido em register_page(), usado
 	 *  pra enfileirar o JS das regras só nesta tela. */
+	/** @var string */
 	private $page_hook = '';
 
 	public function __construct() {
