@@ -120,8 +120,8 @@ msgid "The preview shows the last SAVED version — unsaved changes in the edito
 msgstr "A pré-visualização mostra a última versão SALVA — mudanças ainda não salvas no editor abaixo não aparecem nela."
 
 #: includes/class-htl-metabox.php
-msgid "Asset folder for this template (upload css/js/fonts via FTP and reference them with %s in the HTML): %s"
-msgstr "Pasta de assets deste template (envie css/js/fonts por FTP e referencie com %s no HTML): %s"
+msgid "Asset folder for this template (upload css/js/fonts via FTP and reference them with %1$s in the HTML): %2$s"
+msgstr "Pasta de assets deste template (envie css/js/fonts por FTP e referencie com %1$s no HTML): %2$s"
 
 #: includes/class-htl-metabox.php
 msgid "Inserted into the HTML, at the cursor position."

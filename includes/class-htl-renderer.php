@@ -26,16 +26,21 @@
  *                            resolve nada — é o que impede injeção de
  *                            segunda ordem via conteúdo de baixo
  *                            privilégio (que o core não passa por kses).
- *   5. resolve_loops()     — expande {{loop ...}}...{{/loop}} em listas
+ *   5. build_tags()        — tags da página (contexto de UM post, ou
+ *                            "sem post" de arquivo/home/busca/404),
+ *                            aplicadas só fora dos corpos de {{loop}}.
+ *   6. resolve_loops()     — expande {{loop ...}}...{{/loop}} em listas
  *                            de posts/categorias reais do WordPress,
  *                            já filtrando automaticamente pela
  *                            categoria/tag/autor/busca atual quando o
  *                            template está sendo usado como arquivo.
- *   6. replace_tags()      — troca as tags que sobraram: no contexto de
- *                            UM post (posts/páginas) ou no contexto
- *                            "sem post" de um arquivo/home/busca/404.
- *   7. do_shortcode()      — processa shortcodes de plugins (formulários
- *                            etc.) colados no HTML do template.
+ *                            Cada corpo recebe tags do item + da página
+ *                            numa passada; a saída não é re-escaneada.
+ *
+ * Shortcodes rodam logo após resolve_includes(), só sobre o HTML
+ * autoriado (corpos de {{loop}} rodam por item, com o post da
+ * iteração) — texto de post/comentário nunca é executado. Tags {{...}}
+ * nos atributos de um shortcode NÃO são resolvidas (chegam literais).
  */
 
 defined( 'ABSPATH' ) || exit;
@@ -102,7 +107,7 @@ class HTL_Renderer {
 
 		if ( $this->template_is_valid( $template_id ) ) {
 			// $post_id = 0: não existe UM post específico sendo
-			// visitado — replace_tags() trata esse caso com tags de
+			// visitado — build_tags() trata esse caso com tags de
 			// arquivo ({{archive_title}}, etc.) em vez das tags de post.
 			$this->render_page( 0, $template_id );
 			exit;
@@ -113,9 +118,9 @@ class HTL_Renderer {
 
 	/**
 	 * Confere se um ID de template ainda é válido pra usar — existe,
-	 * é do tipo certo, e está publicado. Centralizado aqui porque três
-	 * lugares diferentes (post individual, arquivo, preview) precisam
-	 * da mesma checagem.
+	 * é do tipo certo, e está publicado. Usado no front-end (post
+	 * individual e arquivo); o preview tem regra própria, que aceita
+	 * rascunhos (ver maybe_render_preview()).
 	 */
 	private function template_is_valid( $template_id ) {
 		return $template_id
@@ -226,7 +231,13 @@ class HTL_Renderer {
 
 		$template_id = absint( wp_unslash( $_GET['htl_preview'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended,WordPress.Security.ValidatedSanitizedInput.InputNotValidated -- preview is protected by authentication and capability checks.
 
-		if ( ! $this->template_is_valid( $template_id ) ) {
+		// Diferente do front-end, o preview aceita rascunho/pendente/privado:
+		// é justamente onde se testa um template antes de publicar (o botão
+		// aparece em qualquer status salvo, e "Salvar como cópia" cria um
+		// rascunho). Lixeira e auto-draft continuam fora.
+		if ( ! $template_id
+			|| HTL_Post_Type::SLUG !== get_post_type( $template_id )
+			|| in_array( get_post_status( $template_id ), array( 'trash', 'auto-draft' ), true ) ) {
 			return;
 		}
 
@@ -282,6 +293,16 @@ class HTL_Renderer {
 		);
 
 		$html = $this->resolve_includes( $html, $css_bucket );
+
+		// Escape hatch pra formulários e componentes de plugins: shortcodes
+		// colados no HTML do template são processados como num post normal
+		// (Contact Form 7, Gravity Forms, etc.). Roda SÓ sobre o HTML
+		// autoriado (template + includes), antes de qualquer expansão:
+		// título, conteúdo, comentários e meta de posts entram depois e
+		// nunca passam por do_shortcode() aqui — senão um visitante que
+		// comentasse "[algum_shortcode]" o executaria no template.
+		$html = $this->run_shortcodes_outside_loops( $html );
+
 		$html = $this->resolve_menus( $html );
 
 		// Resolução de meta SOMENTE sobre HTML autoriado, fora de corpos
@@ -293,20 +314,113 @@ class HTL_Renderer {
 		// (stored XSS de segunda ordem).
 		$html = $this->resolve_meta_outside_loops( $html, $post_id );
 
-		$html = $this->resolve_loops( $html );
-		$html = $this->replace_tags( $html, $post_id );
+		// Tags da página resolvidas ANTES da expansão e só fora dos corpos
+		// de {{loop}}: o output de um loop (conteúdo e comentários de
+		// outros posts) nunca volta pelo strtr da página — senão um item
+		// contendo o literal "{{post_content}}" imprimia o conteúdo da
+		// página visitada. Cada corpo recebe as tags da página por baixo
+		// das do item (ver resolve_loops()), numa passada só.
+		// Uma passada só sobre as partes autoriadas: trechos fora de loop
+		// recebem as tags da página, blocos {{loop}} são expandidos. Nada
+		// do que uma parte gera é lido pela outra — nem o conteúdo da
+		// página vira {{loop}}, nem o output do loop recebe tags da página.
+		$page_tags = $this->build_tags( $post_id );
+		$parts     = $this->split_loops( $html );
 
-		// Escape hatch pra formulários e componentes de plugins: shortcodes
-		// colados no HTML do template são processados como num post normal
-		// (Contact Form 7, Gravity Forms, etc.). Shortcode não registrado
-		// permanece como texto, igual no core.
-		$html = do_shortcode( $html );
+		foreach ( $parts as $index => $part ) {
+			$parts[ $index ] = ( 1 === $index % 2 )
+				? $this->resolve_loops( $part, $page_tags )
+				: strtr( $part, $page_tags );
+		}
+
+		$html = implode( '', $parts );
 
 		$this->print_shell( $html, implode( "\n", $css_bucket ) );
 	}
 
 	private function render_password_form( $post_id ) {
 		$this->print_shell( get_the_password_form( $post_id ) );
+	}
+
+	/**
+	 * Divide o HTML em trechos alternados: índices pares = fora de loop,
+	 * ímpares = um bloco {{loop}}...{{/loop}} inteiro. preg_split com
+	 * delimitador capturado (em vez de um regex que casa o texto "fora"
+	 * caractere a caractere) não estoura o limite de backtracking do PCRE
+	 * em templates grandes; se mesmo assim falhar, trata tudo como um
+	 * trecho só em vez de devolver página em branco.
+	 */
+	private function split_loops( $html ) {
+		$parts = preg_split( '/(\{\{loop\b.*?\{\{\/loop\}\})/is', (string) $html, -1, PREG_SPLIT_DELIM_CAPTURE );
+
+		return is_array( $parts ) ? $parts : array( (string) $html );
+	}
+
+	/**
+	 * Aplica $callback só aos trechos FORA de blocos {{loop}}...{{/loop}};
+	 * os blocos voltam intocados (cada corpo é tratado por item em
+	 * resolve_loops()).
+	 */
+	private function map_outside_loops( $html, callable $callback ) {
+		$parts = $this->split_loops( $html );
+
+		foreach ( $parts as $index => $part ) {
+			if ( 0 === $index % 2 ) {
+				$parts[ $index ] = $callback( $part );
+			}
+		}
+
+		return implode( '', $parts );
+	}
+
+	/**
+	 * do_shortcode() sobre o HTML autoriado, PULANDO corpos de {{loop}} —
+	 * cada corpo roda os próprios shortcodes por item, com o post da
+	 * iteração no global (ver resolve_loops()).
+	 */
+	private function run_shortcodes_outside_loops( $html ) {
+		return $this->map_outside_loops(
+			$html,
+			function ( $segment ) {
+				return $this->run_shortcodes( $segment );
+			}
+		);
+	}
+
+	/**
+	 * Roda shortcodes numa string autoriada. $context_post, quando
+	 * informado, vira o global $post durante a chamada (shortcodes de
+	 * loop costumam ler get_the_ID()). A saída de cada shortcode tem
+	 * "{{" neutralizado: ela pode ecoar dado de usuário (comentário,
+	 * formulário) e ainda vai passar pelos parsers de tag — sem isso, um
+	 * "{{meta:x}}" digitado por visitante seria resolvido. Teto conhecido:
+	 * "{{" dentro de <script> gerado por shortcode também vira entidade;
+	 * se isso importar, trocar por marcadores reinseridos após resolve_loops().
+	 */
+	private function run_shortcodes( $html, $context_post = null ) {
+		global $post;
+
+		$original_post = $post;
+		if ( $context_post instanceof WP_Post ) {
+			$post = $context_post; // phpcs:ignore WordPress.WP.GlobalVariablesOverride
+			setup_postdata( $context_post );
+		}
+
+		$neutralize = static function ( $output ) {
+			return is_string( $output ) ? str_replace( '{{', '&#123;&#123;', $output ) : $output;
+		};
+		add_filter( 'do_shortcode_tag', $neutralize, PHP_INT_MAX );
+		$html = do_shortcode( $html );
+		remove_filter( 'do_shortcode_tag', $neutralize, PHP_INT_MAX );
+
+		if ( $context_post instanceof WP_Post ) {
+			$post = $original_post; // phpcs:ignore WordPress.WP.GlobalVariablesOverride
+			if ( $original_post instanceof WP_Post ) {
+				setup_postdata( $original_post );
+			}
+		}
+
+		return $html;
 	}
 
 	/**
@@ -418,10 +532,10 @@ class HTL_Renderer {
 	 * ATUAL da URL. Um valor explícito no {{loop}} sempre tem prioridade
 	 * sobre esse auto-preenchimento.
 	 */
-	private function resolve_loops( $html ) {
+	private function resolve_loops( $html, array $page_tags = array() ) {
 		return preg_replace_callback(
-			'/\{\{loop\s*(.*?)\}\}(.*?)\{\{\/loop\}\}/is',
-			function ( $matches ) {
+			'/\{\{loop\b\s*(.*?)\}\}(.*?)\{\{\/loop\}\}/is',
+			function ( $matches ) use ( $page_tags ) {
 				$attr_string    = trim( $matches[1] );
 				$inner_template = $matches[2];
 
@@ -542,8 +656,12 @@ class HTL_Renderer {
 					// o post da iteração — o output da expansão, que embute
 					// conteúdo de posts de autores comuns, nunca passa de
 					// novo pelo parser de meta (injeção de segunda ordem).
-					$inner   = $this->resolve_meta_tags( $inner_template, $looped_post->ID );
-					$output .= $this->replace_tags( $inner, $looped_post->ID );
+					$inner = $this->run_shortcodes( $inner_template, $looped_post );
+					$inner = $this->resolve_meta_tags( $inner, $looped_post->ID );
+					// Uma passada só sobre o corpo autoriado: tags do item
+					// vencem; as da página ({{archive_title}}, etc.) cobrem
+					// o resto.
+					$output .= strtr( $inner, array_merge( $page_tags, $this->build_tags( $looped_post->ID ) ) );
 				}
 
 				if ( '' === $output ) {
@@ -731,7 +849,8 @@ class HTL_Renderer {
 	}
 
 	/**
-	 * Troca {{tag}} pelo valor real. Dois modos:
+	 * Mapa {{tag}} => valor pra um contexto (quem aplica é o chamador,
+	 * via strtr, só sobre HTML autoriado). Dois modos:
 	 *
 	 *   - $post_id truthy: contexto de UM post (a página visitada, ou
 	 *     cada iteração de um {{loop}}) — {{post_title}}, {{permalink}}, etc.
@@ -748,7 +867,7 @@ class HTL_Renderer {
 	 *         return $tags;
 	 *     }, 10, 2 );
 	 */
-	private function replace_tags( $html, $post_id ) {
+	private function build_tags( $post_id ) {
 		if ( ! $post_id ) {
 			$tags = apply_filters(
 				'htl_template_tags',
@@ -764,7 +883,7 @@ class HTL_Renderer {
 				$post_id
 			);
 
-			return strtr( $html, $tags );
+			return is_array( $tags ) ? $tags : array();
 		}
 
 		global $post;
@@ -820,7 +939,7 @@ class HTL_Renderer {
 			setup_postdata( $original_post );
 		}
 
-		return strtr( $html, $tags );
+		return is_array( $tags ) ? $tags : array();
 	}
 
 	/**

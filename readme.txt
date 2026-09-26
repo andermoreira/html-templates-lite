@@ -140,6 +140,11 @@ Em Templates HTML → Ajustes, seção "Posts e páginas por regra": escolha o t
 
 * `{{loop}}`: o atributo `orderby` agora é validado contra uma whitelist (date, title, rand, menu_order, modified, comment_count, ID) — valor não reconhecido cai em `date`, em vez de repassar string arbitrária ao WP_Query.
 * Tela Ferramentas → Templates HTML Lite: aviso quando a lista atinge o teto de itens exibidos, em vez de omitir os demais em silêncio.
+* Segurança: shortcodes agora rodam só sobre o HTML do template (e dos `{{include}}`), antes de expandir tags e loops. Antes, `do_shortcode()` rodava na página final e executava `[shortcode]` vindo de comentários de visitantes, títulos, excertos e campos de posts. Dentro de `{{loop}}`, os shortcodes rodam por item, com o post da iteração. Tags `{{...}}` em atributos de shortcode não são mais resolvidas, e `{{` na saída de um shortcode é neutralizado.
+* Segurança: o HTML gerado por um `{{loop}}` (conteúdo e comentários de outros posts) não é mais relido pela troca de tags da página. Antes, um item com o texto literal `{{post_content}}` exibia o conteúdo da página visitada. Tags de arquivo (`{{archive_title}}` etc.) continuam funcionando dentro do loop.
+* Pré-visualização funciona com templates em rascunho, pendentes ou privados (antes só publicados; o preview de uma cópia recém-duplicada caía na home do tema).
+* O save deixa de gravar `_htl_template_id = 0` no template quando o WordPress cria a revisão no mesmo request.
+* Ferramentas → Templates HTML Lite: os botões "Gerenciar templates" e "Ajustes" só aparecem para quem tem permissão de abrir essas telas.
 * Interno: as condições de arquivo (home/categoria/tag/.../404) passam a ter fonte única em `HTL_Settings::archive_conditions()`, reusada pelo renderer — antes cada classe mantinha a própria cópia das chaves.
 
 = 0.6.3 =

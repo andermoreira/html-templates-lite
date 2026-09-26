@@ -267,7 +267,7 @@ class HTL_Metabox {
 		<p class="description">
 			<?php
 			printf(
-				/* translators: %s: caminho da pasta de assets do template */
+				/* translators: 1: tag {{assets_url}}, 2: caminho da pasta de assets do template */
 				esc_html__( 'Asset folder for this template (upload css/js/fonts via FTP and reference them with %1$s in the HTML): %2$s', 'html-templates-lite' ),
 				'<code>{{assets_url}}</code>',
 				'<code>' . esc_html( $htl_assets_dir ) . '</code>'
@@ -526,6 +526,14 @@ class HTL_Metabox {
 		}
 
 		if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) {
+			return;
+		}
+
+		// A revisão criada no mesmo request dispara save_post de novo, com
+		// o $_POST ainda presente; get_post_type() seria 'revision' e cairia
+		// no ramo do seletor, gravando _htl_template_id = 0 no pai (o meta
+		// de revisão é copiado pelo core via revisions_enabled).
+		if ( wp_is_post_revision( $post_id ) ) {
 			return;
 		}
 

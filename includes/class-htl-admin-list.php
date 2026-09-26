@@ -115,14 +115,27 @@ class HTL_Admin_List {
 				<?php endif; ?>
 			<?php endif; ?>
 
+			<?php
+			// Esta tela abre pra edit_posts, mas as telas de destino exigem
+			// mais (templates: unfiltered_html; Ajustes: manage_options) —
+			// sem esse filtro, um Autor/Editor clicava e caía em "sem permissão".
+			$can_manage_templates = current_user_can( 'edit_htl_templates' );
+			$can_manage_settings  = current_user_can( 'manage_options' );
+			?>
+			<?php if ( $can_manage_templates || $can_manage_settings ) : ?>
 			<p>
+				<?php if ( $can_manage_templates ) : ?>
 				<a href="<?php echo esc_url( admin_url( 'edit.php?post_type=' . HTL_Post_Type::SLUG ) ); ?>" class="button">
 					<?php esc_html_e( 'Manage templates', 'html-templates-lite' ); ?>
 				</a>
+				<?php endif; ?>
+				<?php if ( $can_manage_settings ) : ?>
 				<a href="<?php echo esc_url( admin_url( 'edit.php?post_type=' . HTL_Post_Type::SLUG . '&page=htl-archive-settings' ) ); ?>" class="button">
 					<?php esc_html_e( 'Home and archive settings', 'html-templates-lite' ); ?>
 				</a>
+				<?php endif; ?>
 			</p>
+			<?php endif; ?>
 		</div>
 		<?php
 	}
