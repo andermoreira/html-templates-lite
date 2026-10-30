@@ -892,6 +892,7 @@ class HTL_Renderer {
 		$context_post  = get_post( $post_id );
 
 		if ( $context_post ) {
+			$post = $context_post; // phpcs:ignore WordPress.WP.GlobalVariablesOverride
 			// Alguns plugins que filtram 'the_content' (por exemplo, pra
 			// processar shortcodes) esperam encontrar o post certo no
 			// global $post, em vez de usar só o argumento do filtro.

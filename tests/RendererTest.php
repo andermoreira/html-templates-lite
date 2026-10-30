@@ -52,6 +52,19 @@ final class RendererTest extends TestCase {
 		self::assertSame( 20, $this->invoke_private( 'resolve_rule_template', 5 ) );
 	}
 
+	public function test_content_filters_receive_loop_post_and_global_is_restored(): void {
+		$original = new WP_Post( 1 );
+		$item = new WP_Post( 2 );
+		$GLOBALS['post'] = $original;
+		$GLOBALS['htl_test_posts'][2] = $item;
+		$GLOBALS['htl_test_content_post'] = null;
+
+		$this->invoke_private( 'build_tags', 2 );
+
+		self::assertSame( $item, $GLOBALS['htl_test_content_post'] );
+		self::assertSame( $original, $GLOBALS['post'] );
+	}
+
 	private function invoke_private( string $method, ...$arguments ) {
 		$reflection = new ReflectionMethod( HTL_Renderer::class, $method );
 

@@ -13,8 +13,32 @@ $GLOBALS['htl_test_taxonomies']    = array();
 function add_action() {}
 function add_filter() {}
 function apply_filters( $hook, $value ) {
+	if ( 'the_content' === $hook ) {
+		$GLOBALS['htl_test_content_post'] = $GLOBALS['post'];
+	}
 	return $value;
 }
+class WP_Post {
+	public $ID;
+	public function __construct( $id ) { $this->ID = $id; }
+}
+function get_post( $id ) { return $GLOBALS['htl_test_posts'][ $id ] ?? null; }
+function setup_postdata( $post ) {}
+function post_password_required( $post_id ) { return false; }
+function get_post_field( $field, $id ) { return ''; }
+function get_the_title( $id ) { return ''; }
+function get_the_excerpt( $id ) { return ''; }
+function get_the_date( $format, $id ) { return ''; }
+function get_the_author_meta( $field, $id ) { return ''; }
+function get_the_category_list( $separator, $parents, $id ) { return ''; }
+function get_the_tag_list( $before, $separator, $after, $id ) { return ''; }
+function get_the_post_thumbnail_url( $id, $size ) { return ''; }
+function get_permalink( $id ) { return ''; }
+function comments_open( $id ) { return false; }
+function post_type_supports( $type, $feature ) { return false; }
+function get_comments( $args ) { return array(); }
+function get_bloginfo( $field ) { return ''; }
+function wp_date( $format ) { return ''; }
 function __( $text, $domain = null ) {
 	return $text;
 }
